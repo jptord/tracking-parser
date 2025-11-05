@@ -1,5 +1,5 @@
 {
-  "name": "apicore",
+  "name": "tracking-parser",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,10 +8,8 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "apicore": "file:",
+  "dependencies": {   
     "atx-bconverter": "^1.0.0",
-    "atx-logger": "^1.0.1",
     "better-sqlite3": "^8.5.1",
     "body-parser": "^1.20.2",
     "compression": "^1.7.5",
@@ -23,9 +21,7 @@
     "http-proxy": "^1.18.1",
     "jszip": "^3.10.1",
     "kafkajs": "^2.2.4",
-    "ldapjs": "^3.0.5",
     "sequelize": "^6.32.1",
-    "socket.io": "^4.7.5",
     "sqlite3": "^5.1.6",
     "uuid": "^9.0.0"
   }

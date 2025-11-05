@@ -4,7 +4,7 @@ const {TcpServer} = require("./network/tcp.server.js");
 const {UdpServer} = require("./network/udp.server.js");
 const {DBManager}  = require("./database/dbmanager.js");
 const {KafkaGPS} = require("./network/kafka.gps.js")
-const {DeviceController} = require('../libs/servercore/devicecontroller.js');
+const {DeviceController} = require('./tracking/device.controller.js');
 
 const httpServer        = new HttpServer({port:process.env.HTTP_PORT ,publicFolder: "public"});
 const tcpServer         = new TcpServer({port:process.env.TCP_PORT});

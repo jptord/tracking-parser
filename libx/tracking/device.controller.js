@@ -1,15 +1,15 @@
 
 const { Device }   	= require("./devicex.js")
 const { Track }   	= require("./track.js")
-const { Meitrack }  = require("../trackers/meitrack.js");
-const { C756track } = require("../trackers/c756track.js");
+const { Meitrack }  = require("..../trackers/meitrack.js");
+const { C756track } = require("..../trackers/c756track.js");
 const { GPSSpecs } = require("./gpsspecs.js");
 const  fs 			= require("fs");
 
 const meitrack    	= new Meitrack();
 const c756track   	= new C756track();
 
-const PATH_TRACKERS 	= "./trackers/";
+const PATH_TRACKERS 	= "../../trackers/";
 
 class DeviceController{    
 	constructor(tcpServer,udpServer,kafkagps,dbm){
