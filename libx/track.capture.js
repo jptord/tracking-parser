@@ -1,11 +1,11 @@
 const dotenv = require('dotenv').config();
-const { HttpServer } = require("./network/http.server.js");
-const { TcpServer } = require("./network/tcp.server.js");
-const { UdpServer } = require("./network/udp.server.js");
-const { DBManager } = require("./database/dbmanager.js");
-const { KafkaGPS } = require("./network/kafka.gps.js")
-const { DeviceController } = require('./tracking/device.controller.js');
-const { KernoMonitor } = require('./tracking/monitor.js');
+const { HttpServer } = require("./network/http.server");
+const { TcpServer } = require("./network/tcp.server");
+const { UdpServer } = require("./network/udp.server");
+const { DBManager } = require("./database/dbmanager");
+const { KafkaGPS } = require("./network/kafka.gps")
+const { DeviceController } = require('./tracking/device.controller');
+const { KernoMonitor } = require('./tracking/monitor');
 
 const httpServer = new HttpServer({ port: process.env.HTTP_PORT, publicFolder: "public" });
 const tcpServer = new TcpServer({ port: process.env.TCP_PORT });
