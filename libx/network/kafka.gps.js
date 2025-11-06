@@ -9,11 +9,11 @@ class KafkaGPS{
     }
     createServer(opts={}){
         this.kafka      = new Kafka({
-            clientId    : 'kafkagps',
+            clientId    : opts.id,
             brokers     : opts.brokers,
           });
         this.producer       = this.kafka.producer({
-            allowAutoTopicCreation: false,
+            allowAutoTopicCreation: true,
             transactionTimeout: 1000});
         this.isConnected    = true;
         this.connectProducer();            

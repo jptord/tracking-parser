@@ -1,15 +1,15 @@
 
 const { Device }   	= require("./devicex.js")
 const { Track }   	= require("./track.js")
-const { Meitrack }  = require("..../trackers/meitrack.js");
-const { C756track } = require("..../trackers/c756track.js");
+//const { Meitrack }  = require("..../trackers/meitrack.js");
+//const { C756track } = require("..../trackers/c756track.js");
 const { GPSSpecs } = require("./gpsspecs.js");
 const  fs 			= require("fs");
 
-const meitrack    	= new Meitrack();
-const c756track   	= new C756track();
+//const meitrack    	= new Meitrack();
+//const c756track   	= new C756track();
 
-const PATH_TRACKERS 	= "../../trackers/";
+const PATH_TRACKERS 	= "./trackers/";
 
 class DeviceController{    
 	constructor(tcpServer,udpServer,kafkagps,dbm){
@@ -177,7 +177,7 @@ class DeviceController{
 	getDevices(){
 		let result = [];
         let me = this;
-        let today = getToDay();
+        //let today = getToDay();
 		console.log("getDevices");
         return this.devices.map(d=>d.get());
 	}
@@ -436,7 +436,6 @@ class DeviceController{
 			device.sendTcp(rep_vars(msg));
 		}
 	}
-	/* route '/device/:id/update/state' */
 	processStatesFull(req, res, callback){
 		let device = this.getDevice(req.params.id);
 		Object.keys(req.body).forEach(k => {
@@ -447,89 +446,6 @@ class DeviceController{
 	save(){		
 		this.devices.forEach(device => device.save(this.dbm));		
 		return {result:"ok"};
-	}
-	/* purge */
-	process(message, callback){
-        let data;
-        let device;
-        if (meitrack.test(message)){
-            data = meitrack.parse(message);
-            device = this.getDevice(data.device);
-            device.setType('mei-t311');
-            //post process
-            device.setConfig("IDENTIFIER",data.iden);
-            device.setConfig("IMEI",data.imei);
-            device.setState("EVENT",data.event);
-            device.setState("SPEED",data.speed);
-            if (data.event == 'IGNITION_ON') device.setState("IGNITION",true);
-            if (data.event == 'IGNITION_OFF') device.setState("IGNITION",false);
-            if (data.event == 'EXTERNAL_BATTERY_ON') device.setState("BATTERY_EXT",true);
-            if (data.event == 'EXTERNAL_BATTERY_CUT') device.setState("BATTERY_EXT",false);
-            if (data.com == "AAA"){
-                let track = new Track({
-                    t:data.t,
-                    lat:data.lat,
-                    lon:data.lon,
-                    bat:data.b,
-                    acc:data.acc,
-                    stp:data['s'],
-                });
-                device.addTrack(track);
-                device.sortTracks();
-                let lasttime = isNaN(Number(device.getConfig("LASTTIME")))?0:Number(device.getConfig("LASTTIME"));
-                console.log("lasttime< t",lasttime,Number(data.t));
-                if (lasttime<Number(data.t)){   //fix offset time buffer
-                    device.setLast(track); 
-                    device.setConfig("LASTTIME",data.t);
-                    console.log("on time")
-                }else{
-                    console.log("less time");
-                }
-                callback(device,track);		
-            }else if (data.com == "E91"){       
-                //version firmware
-                callback(device,null);
-            }else{
-                callback(device,null);
-            }
-        }else if(c756track.test(message)){
-            data = c756track.parse(message);
-            device = this.getDevice(data.device);
-            device.setType('c756');
-            let track = new Track({
-                t:data.t,
-                lat:data.lat,
-                lon:data.lon,
-                bat:data.b,
-                acc:data.acc,
-                stp:data['s'],
-            });
-            if (data.com =="V1"){
-                device.addTrack(track);
-                device.setLast(track);  
-            }
-            callback(device,track);		
-        }{
-            try{
-                data = JSON.parse(message);
-                device = this.getDevice(data.device);
-                device.setType('apk');
-                let track = new Track({
-                    t:data.t,
-                    lat:data.lat,
-                    lon:data.lon,
-                    bat:data.b,
-                    acc:data.acc,
-                    stp:data['s'],
-                });
-                device.addTrack(track);
-                device.setLast(track); 
-                    
-                callback(device,track);	
-            }catch(e){
-
-            }
-        }    
 	}
 }
 

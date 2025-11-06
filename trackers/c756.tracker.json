@@ -1,0 +1,71 @@
+{
+	"name": "GPS Tracker",
+	"model": "c756",
+    "code": "gps-tracker-c756",
+	"brand": "GPS Tracker",
+	"type": "tracker", 
+	"version": "1.0.0", 
+	"connetion": "tcp",
+	"settingCom": "sms",
+	"defaultPassword": "123456",
+	"protocol": [
+        {
+            "conditions": [
+                {
+                    "type":"start",
+                    "value":"*HQ",
+					"replace":false
+                }, 
+                {
+                    "type":"end",
+                    "value":"#",
+					"replace":true
+                }
+            ],
+            "type":"plain",
+            "splitter":",",
+            "location":{
+				"type":"index",
+                "indexLat":5,
+                "indexLon":7,
+                "format":"WGS84",
+				"formatType":"DMMJ",
+				"indexNS":6,
+				"indexWE":8
+            },
+            "time":{
+				"type":"index",
+                "indexTime":3,
+				"indexDate":11,
+                "formatType": "format",
+                "format": "DDMMYYhhmsss",
+                "zone": 0
+            },
+            "identifier":{
+				"type":"index",
+                "indexId":1,		
+				"data":"number",	
+                "process":"encrypt"
+            },
+            "data":{
+                "1" : { 
+                    "field":"IMEI"
+                },
+                "2" : { 
+                    "field":"EVENT",
+                    "type":"enum",		
+					"convert":"enum",	
+                    "value":{
+                        "V0" : {"name":"INITIAL","description":"INITIAL"},
+                        "V1" : {"name":"TRACK","description":"TRACK"},
+                        "HTBT" : {"name":"SLEEP","description":"SLEEP"}
+                    }
+                },
+				"9" : {
+					"field":"SPEED",
+					"type":"number"
+				}
+            }	
+        }		
+    ]
+}

@@ -1,0 +1,302 @@
+{
+	"name": "Mei Track",
+	"model": "T311",
+	"code": "gps-mei-t311",
+	"brand": "Mei",
+	"type": "tracker", 
+	"version": "1.0.0", 
+	"connection" : "tcp",
+	"settingCom" : "tcp",
+	"defaultPassword": "",
+	"functions":{
+		"checksum" : "(str)=> ((str.split('').reduce((a,v,i)=>a+str.charCodeAt(i),0))%256).toString(16).toUpperCase()",		
+		"identifier" : "()=>String.fromCharCode(Math.round(Math.random()*57)+65)",
+		"len": "(str)=>str.length"
+	},
+	"protocol": [
+        {
+            "conditions": [
+                {
+                    "type":"start",
+                    "value":"$$",
+					"replace":true
+                },
+                {
+                    "type":"contain",
+                    "value":",AAA",
+					"replace":false
+                },
+                {
+                    "type":"end",
+                    "value":"\r\n",
+					"replace":true
+                }
+            ],
+			"name":"AAA",
+			"description":"Real Time Location Response - A10",
+			"setup":false,
+            "type":"plain",
+            "splitter":",",
+            "location":{
+				"type":"index",
+                "indexLat":4,
+                "indexLon":5,
+                "format":"WGS84",
+				"formatType":"DD",
+				"indexNS":-1,
+				"indexWE":-1
+            },
+            "time":{
+				"type":"index",
+                "indexTime":6,
+                "indexDate":-1,
+                "formatType": "format",
+                "format": "YYMMDDhhmsss",
+                "zone": 0
+            },
+            "identifier":{
+				"type":"index",
+                "indexId":1,
+				"data":"number",
+                "process":"encrypt"
+            },
+			"config":[
+				{"name":"IMEI","default":0,"metadata":"IMEI","type":"string"}
+			],
+			"states":[
+				{"name":"ACCURACY","default":0,"metadata":"SIGNAL","bytetype":"byte","type":"number"},
+				{"name":"SPEED","default":0,"metadata":"SPEED","bytetype":"byte","type":"number"},
+				{"name":"DIRECTION","default":0,"metadata":"DIRECTION","bytetype":"int","type":"number"},
+				{"name":"IGNITION","default":0,"metadata":"EVENT","bytetype":"byte","type":"enum","values":[
+					{"value":1,"name":"IGNITION_ON"},
+					{"value":0,"name":"IGNITION_OFF"}
+				]},
+				{"name":"VEHICLE_THEFT","default":0,"metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
+					{"value":1,"name":"VEHICLE_THEFT"}
+				]},
+				{"name":"SIGNAL","default":"RECOVERY","metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
+					{"value":0,"name":"GPS_SIGNAL_LOST"},
+					{"value":1,"name":"GPS_SIGNAL_RECOVERY"}
+				]},
+				{"name":"BATTERY_EXTERNAL","default":"ON","metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
+					{"value":1,"name":"EXTERNAL_BATTERY_ON"},
+					{"value":0,"name":"EXTERNAL_BATTERY_CUT"}
+				]},
+				{"name":"DISARMED","default":0,"metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
+					{"value":1,"name":"DISARMED"},
+					{"value":0,"name":"ARMED"}
+				]},
+				{"name":"SLEEP","dafault":0,"metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
+					{"value":1,"name":"ENTER_SLEEP"},
+					{"value":0,"name":"EXIT_SLEEP"}
+				]},
+				{"name":"SENSOR_4","dafault":0,"metadata":"ANALOG","bytetype":"byte","type":"substring","value":"SENSOR_4"},
+				{"name":"SENSOR_5","dafault":0,"metadata":"ANALOG","bytetype":"byte","type":"substring","value":"SENSOR_5"}
+			],
+            "data":{
+                "1" : { 
+                    "field":"IMEI",
+                    "type":"string"
+                },
+				"2" : {
+					"field":"COM_TAG",
+                    "type":"string"
+				},
+                "3" : { 
+                    "field":"EVENT",
+                    "type":"enum",
+					"convert":"enum",
+                    "value":{
+                        "1" : {"name":"SOS_PRESSED","description":"SOS "},
+                        "17" : {"name":"LOW_BATTERY","description":"Low Battery "},
+                        "18" : {"name":"LOW_EXTERNAL","description":"Battery Low Ext-Battery "},
+                        "19" : {"name":"SPEEDING","description":"Speeding "},
+                        "20" : {"name":"ENTER_GEO-FENCE","description":"Enter Fence N (N means the number of the fence) "},
+                        "21" : {"name":"EXIT_GEO-FENCE_EXIT_FENCE_N_(N_MEANS_THE_NUMBER_OF_THE_FENCE)","description":""},
+                        "22" : {"name":"EXTERNAL_BATTERY_ON","description":"Ext-Battery On "},
+                        "23" : {"name":"EXTERNAL_BATTERY_CUT","description":"Ext-Battery Cut "},
+                        "24" : {"name":"GPS_SIGNAL_LOST","description":"GPS Signal Lost "},
+                        "25" : {"name":"GPS_SIGNAL_RECOVERY","description":"GPS Recovery "},
+                        "26" : {"name":"ENTER_SLEEP","description":"Enter Sleep "},
+                        "27" : {"name":"EXIT_SLEEP","description":"Exit Sleep "},
+                        "28" : {"name":"GPS_ANTENNA_CUT","description":"GPS Antenna Cut "},
+                        "29" : {"name":"DEVICE_REBOOT","description":"Power On "},
+                        "31" : {"name":"HEARTBEAT_","description":""},
+                        "32" : {"name":"CORNERING","description":"Cornering "},
+                        "33" : {"name":"TRACK_BY_DISTANCE","description":"Distance "},
+                        "34" : {"name":"REPLY_CURRENT_(PASSIVE)","description":"Now "},
+                        "35" : {"name":"TRACK_BY_TIME","description":"Interval Interval "},
+                        "56" : {"name":"ARMED","description":"Armed"},
+                        "57" : {"name":"DISARMED","description":"Disarmed "},
+                        "58" : {"name":"VEHICLE_THEFT","description":"Vehicle Theft "},
+                        "70" : {"name":"REJECT_INCOMING_CALL_","description":""},
+                        "71" : {"name":"GET_LOCATION_BY_CALL","description":""},
+                        "72" : {"name":"AUTO_ANSWER_INCOMING_CALL","description":""},
+                        "144" : {"name":"IGNITION_ON","description":"Ignition On"},
+                        "145" : {"name":"IGNITION_OFF","description":"Ignition Off"}
+                    }
+                },
+				"9" : {
+					"field":"SIGNAL",
+					"type":"number",
+					"factor":"1/31*100",
+					"round":0
+				},
+				"10" : {
+					"field":"SPEED",
+					"type":"number"
+				},
+				"11" : {
+					"field":"DIRECTION",
+					"type":"number"
+				},
+				"13" : {
+					"field":"ALTITUDE",
+					"type":"number"
+				},
+				"15" : {
+					"field":"RUNTIME",
+					"type":"number"
+				},
+				"16" : {
+					"field":"BINFO"
+				},
+				"17" : {
+					"field":"IO",
+					"type":"number"
+				},
+				"18" : {
+					"field":"ANALOG",
+					"type":"substring",
+					"split":"|",
+					"value":{
+						"0":{"name":"SENSOR_1","description":"Sensor Analogico 1","type":"string"},
+						"1":{"name":"SENSOR_2","description":"Sensor Analogico 2","type":"string"},
+						"2":{"name":"SENSOR_3","description":"Sensor Analogico 3","type":"string"},
+						"3":{"name":"SENSOR_4","description":"Sensor Analogico 4","type":"string"},
+						"4":{"name":"SENSOR_5","description":"Sensor Analogico 5","type":"string"}
+					}
+				},
+				"19" : {
+					"field":"EINFO",
+					"type":"number"
+				},
+				"20" : {
+					"field":"CUSTOM"
+				}
+            }
+        },{
+            "conditions": [
+                {
+                    "type":"start",
+                    "value":"$$",	
+					"replace":true
+                },
+                {
+                    "type":"contain",
+                    "value":",E91",
+					"replace":false
+                }
+            ],
+            "type":"plain",
+            "splitter":",",           
+            "identifier":{
+				"type":"index",
+                "indexId":1,
+				"data":"number",
+                "process":"encrypt"
+            },
+            "data":{
+                "1" : { 
+                    "field":"IMEI",
+                    "type":"string"
+                },
+				"2" : {
+					"field":"COM_TAG",
+                    "type":"string"
+				},
+				"3" : {
+					"field":"VERSION",
+                    "type":"string"
+				},
+				"4" : {
+					"field":"SERIAL",
+                    "type":"string"
+				}
+            }	
+        },{
+			"name":"A10",
+			"description":"Real-Time Location Query",
+			"setup":true,		
+			"response":"AAA",
+            "conditions": [
+				{
+					"type":"paramStatic",
+					"name":"REQUEST",
+					"value":"A10"
+				}	
+            ],
+			"sendCommand":"@@{identifier}{len},{imei},{cmd}*{checksum}\r\n",			
+			"param":[
+				{"name":"cmd","value":"A10", "type":"static"},
+				{"name":"imei","value":"IMEI", "type":"device.config"},
+				{"name":"identifier","value":"identifier","params":"", "type":"function"},
+				{"name":"len","value":"len", "params":"',{imei},{cmd}*XX\r\n'", "type":"function"},
+				{"name":"checksum","value":"checksum","params":"'@@{identifier}{len},{imei},{cmd}*'", "type":"function"}
+			],
+			"output":"tcp",
+            "type":"plain"
+        },{
+			"name":"E91",
+			"description":"Version Query",
+			"setup":true,		
+			"response":"AAA",
+            "conditions": [
+				{
+					"type":"paramStatic",
+					"name":"REQUEST",
+					"value":"E91"
+				}	
+            ],
+			"sendCommand":"@@{identifier}{len},{imei},{cmd}*{checksum}\r\n",			
+			"param":[
+				{"name":"cmd","value":"E91", "type":"static"},
+				{"name":"imei","value":"IMEI", "type":"device.config"},
+				{"name":"identifier","value":"identifier","params":"", "type":"function"},
+				{"name":"len","value":"len", "params":",{imei},{cmd}*XX\r\n", "type":"function"},
+				{"name":"checksum","value":"checksum","params":"'@@{identifier}{len},{imei},{cmd}*'", "type":"function"}
+			],
+			"output":"tcp",
+            "type":"plain"
+        },{
+			"name":"B36",
+			"description":"Setting the GPRS Time Zone",
+			"setup":true,		
+			"response":"B36",
+            "conditions": [
+				{
+					"type":"paramStatic",
+					"name":"REQUEST",
+					"value":"B36"
+				},
+				{
+					"type":"paramBetween",
+					"name":"TIMEZONE",
+					"from":-240,
+					"to":240
+				}
+            ],
+			"sendCommand":"@@{identifier}{len},{imei},{cmd},{timezone}*{checksum}\r\n",
+			"param":[
+				{"name":"cmd","value":"B36", "type":"static"},
+				{"name":"timezone","value":"TIMEZONE", "type":"param"},
+				{"name":"imei","value":"IMEI", "type":"device.config"},
+				{"name":"identifier","value":"identifier","params":"", "type":"function"},
+				{"name":"len","value":"len","params":",{imei},{cmd},{timezone}*\r\n", "type":"function"},
+				{"name":"checksum","value":"checksum" ,"params":"@@{identifier}{len},{imei},{cmd},{timezone}*", "type":"function"}
+			],
+			"output":"tcp",
+            "type":"plain"
+        }
+    ]
+}

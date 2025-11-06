@@ -1,0 +1,133 @@
+{
+	"name": "DUT-E S6",
+	"code": "gps-tech-s6",
+	"model": "DUT-E S6",
+	"brand": "TECHNOTON",
+	"type": "tracker", 
+	"version": "1.0.0", 
+	"connection" : "tcp",
+	"settingCom" : "tcp",
+	"defaultPassword": "",
+	"functions":{
+		"checksum" : "(str)=> ((str.split('').reduce((a,v,i)=>a+str.charCodeAt(i),0))%256).toString(16).toUpperCase()",		
+		"identifier" : "()=>String.fromCharCode(Math.round(Math.random()*57)+65)",
+		"celcius" : "(farent)=>Math.round((parseInt(farent)-32)*(5/9))", 
+		"len": "(str)=>str.length"
+	},
+	"protocol": [
+		{
+            "conditions": [
+                {
+                    "type":"start",
+                    "value":"#L#2.0",
+					"replace":false
+                },
+                {
+                    "type":"contain",
+                    "value":"#L#2.0",
+					"replace":false
+                }
+            ],
+			"name":"Login Packet",
+			"description":"Login Packet",
+			"setup":false,
+            "type":"plain",
+            "splitter":";",      
+            "identifier":{
+				"type":"index",
+                "indexId":1,
+				"data":"string",
+                "process":"none"
+            },
+            "data":{
+                "0" : { 
+                    "field":"VERSION",
+					"type":"substring",
+					"split":"#",
+                    "value":{
+						"2":{"name":"VERSION","description":"Protocol version","type":"string"}
+					}
+                },
+				"4" : {
+					"field":"MODEL",
+                    "type":"string"
+				}
+            },
+			
+			"output" : "tcp",
+			"param" : [],
+			"sendCommand":"#AL#1\r\n"
+        },
+        {
+            "conditions": [
+                {
+                    "type":"start",
+                    "value":"#D#",
+					"replace":true
+                }
+            ],
+			"name":"EXPACKET",
+			"description":"Extended Packet",
+			"setup":false,
+            "type":"plain",
+            "splitter":";",
+            "location":{
+				"type":"index",
+                "indexLat":2,
+                "indexLon":4,
+                "format":"WGS84",
+				"formatType":"DMMJ",
+				"indexNS":3,
+				"indexWE":5
+            },
+            "time":{
+				"type":"index",
+                "indexTime":1,
+                "indexDate":0,
+                "formatType": "format",
+                "format": "DDMMYYhhmsss",
+                "zone": 0
+            },
+			"config":[
+			],
+			"states":[
+				{"name":"SPEED","default":0,"metadata":"SPEED","bytetype":"byte","type":"number"},
+				{"name":"DIRECTION","default":0,"metadata":"DIRECTION","bytetype":"int","type":"number"},
+				{"name":"FUEL_LEVEL","default":0,"metadata":"ANALOG","bytetype":"int","type":"submetadata","submetadata":"FUEL_LEVEL"},
+				{"name":"FUEL_TEMP","default":0,"metadata":"ANALOG","bytetype":"int","type":"submetadata","submetadata":"FUEL_TEMP","function":"celcius"}
+			],
+            "data":{
+				"6" : {
+					"field":"SPEED",
+					"type":"number"
+				},
+				"7" : {
+					"field":"DIRECTION",
+					"type":"number"
+				},
+				"9" : {
+					"field":"SATELLITES",
+					"type":"number"
+				},
+				"15" : {
+					"field":"ANALOG",
+					"type":"substring_enum",
+					"split":",",
+					"subsplit":":",
+					"enumField":0,
+					"enumValue":2,
+					"value":{
+						"101_521126":{"name":"DISTANCE_GNSS","description":"Distancia GNSS km","type":"string"},
+						"101_521127":{"name":"MOVE_TIME","description":"Movement Time by GNSS","type":"string"},
+						"101_174":{"name":"FUEL_TEMP","description":"Engine Fuel Temp","type":"number"},
+						"101_521023_2.10":{"name":"FUEL_LEVEL","description":"Fuel Tank Level","type":"number"}
+					}
+				}
+            },
+			
+			"output" : "tcp",
+			"param" : [],
+			"sendCommand":"#AD#1\r\n"
+        }
+    ]
+}

@@ -1,0 +1,124 @@
+{
+	"code": "apk-personal",
+	"name": "Personal APK",
+	"model": "tracking-personal",
+	"brand": "KERNOTEC",
+	"type": "apk", 
+	"version": "1.0.33", 
+	"connection" : "udp",
+	"settingCom" : "http",
+	"defaultPassword": "",
+	"protocol": [
+        {
+            "conditions": [
+                {
+                    "type":"start",
+                    "value":"{",
+					"replace":false
+                }, 
+                {
+                    "type":"end",
+                    "value":"}",
+					"replace":false
+                }
+            ],
+            "type":"json",
+            "splitter":null,
+            "location":{
+				"type":"attr",
+                "indexLat":"lat",
+                "indexLon":"lon",
+                "format":"WGS84",
+				"formatType":"DD",
+				"indexNS":-1,
+				"indexWE":-1
+            },
+            "time":{
+				"type":"attr",
+                "indexDate":-1,
+				"indexTime":"t",
+                "formatType":"timestamp",
+                "format": "long",
+                "zone": 0
+            },
+            "identifier":{
+				"type":"attr",
+                "indexId":"id",
+				"data":"string",
+                "process":"none"
+            },
+            "data":{
+                "id" : { 
+                    "field":"ID",
+					"type":"string"
+                },
+                "lat" : { 
+                    "field":"LATTITUDE",
+					"type":"number"
+                },
+                "lon" : { 
+                    "field":"LONGITUDE",
+					"type":"number"
+                },
+                "bat" : { 
+                    "field":"BATTERY",
+					"type":"number"
+                },
+                "t" : { 
+                    "field":"TIMESTAMP",
+					"type":"number"
+                },
+                "acc" : { 
+                    "field":"ACCURACY",
+					"type":"number"
+                },
+                "stp" : { 
+                    "field":"STOP",
+					"type":"number"
+                }
+            },
+			"routes":[
+				{
+					"api":"/emergency",
+					"redirect":"monitor"
+				},
+				{
+					"api":"/suggestion",
+					"redirect":"monitor"
+				},
+				{
+					"api":"/claim",
+					"redirect":"monitor"
+				}
+			]
+        },{
+			"name":"SEND_PUSH",
+			"description":"Send notification push",
+			"setup":true,	
+			"response":null,
+            "conditions": [
+				{
+					"type":"paramNotNull",
+					"name":"NOTIF_DESC",
+					"value":""
+				},
+				{
+					"type":"paramNotNull",
+					"name":"NOTIF_TITLE",
+					"value":""
+				},
+				{
+					"type":"paramNotNull",
+					"name":"NOTIF_REQ",
+					"value":""
+				}
+            ],
+			"sendCommand":"",
+			"param":[
+				{"type":"param", "name":"NOTIF_DESC", "value":"NOTIF_DESC"}
+			],
+			"output":"setup",
+            "type":"plain"
+		}
+    ]
+}
