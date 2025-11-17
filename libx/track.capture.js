@@ -1,38 +1,38 @@
 const dotenv = require('dotenv').config();
-const { HttpServer } = require("./network/http.server");
-const { TcpServer } = require("./network/tcp.server");
-const { UdpServer } = require("./network/udp.server");
-const { DBManager } = require("./database/dbmanager");
-const { KafkaGPS } = require("./network/kafka.gps")
-const { DeviceController } = require('./tracking/device.controller');
-const { KernoMonitor } = require('./tracking/monitor');
+const { HttpServer } = require("./network/http.server.js");
+const { TcpServer } = require("./network/tcp.server.js");
+const { UdpServer } = require("./network/udp.server.js");
+const { DBManager } = require("./database/dbmanager.js");
+const { KafkaProducer } = require("./network/kafka.producer.js")
+const { DeviceController } = require('./tracking/device.controller.js');
+//const { KernoMonitor } = require('./tracking/monitor');
 
-const httpServer = new HttpServer({ port: process.env.HTTP_PORT, publicFolder: "public" });
-const tcpServer = new TcpServer({ port: process.env.TCP_PORT });
-const udpServer = new UdpServer({ port: process.env.UDP_PORT });
-const dbm = new DBManager({ name: 'tracking-capture' });
-const kafkagps = new KafkaGPS({ id:'tracking-capture-1',brokers: ["172.20.50.59:9092"] });
-const deviceController = new DeviceController(tcpServer, udpServer, kafkagps, dbm);
-const kernoMonitor 	= new KernoMonitor({ port: 7777, app: httpServer });
+const httpServer 		= new HttpServer({ port: process.env.HTTP_PORT, publicFolder: "public" });
+const tcpServer 		= new TcpServer({ port: process.env.TCP_PORT });
+const udpServer 		= new UdpServer({ port: process.env.UDP_PORT });
+const dbm 				= new DBManager({ name: 'tracking-capture' });
+const kafkaProducer 	= new KafkaProducer({ id:'tracking-capture-1',brokers: ["172.20.50.59:9092"] });
+const deviceController 	= new DeviceController(tcpServer, udpServer, kafkaProducer, dbm);
+//const kernoMonitor 	= new KernoMonitor({ port: 7777, app: httpServer });
 
 class TrackCapture {
 	constructor() {
+		
 	}
 	start() {
 		console.info("TrackCapture 3.0.0");
 		httpServer.start();
 		tcpServer.start();
 		udpServer.start();
-		kernoMonitor.setDevices(deviceController);
-		kernoMonitor.start();
+		kafkaProducer.start();
+		//kernoMonitor.start();
 		tcpServer.addReceiveEvent((msg, socket) => {
 			console.log('tcpServer.addReceiveEvent: ' + msg);
 			deviceController.input(msg, socket, (device, timestamp) => {
 				if (device != undefined) {
 					device.setTcp(socket);
-					kernoMonitor.updateDevice(device);
-
-					kafkagps.send('tracking-gps', JSON.stringify(device.get()));
+					//kernoMonitor.updateDevice(device);
+					kafkaProducer.send('tracking-gps', JSON.stringify(device.get()),device.id);
 				} else console.log("cant'read", msg);
 			});
 			console.log(msg);
@@ -40,7 +40,10 @@ class TrackCapture {
 		});
 		udpServer.addReceiveEvent((msg) => {
 			console.log('udpServer.addReceiveEvent: ' + msg);			
-			deviceController.input(msg, null, (device, timestamp) => {
+			deviceController.input(msg, null, (device, timestamp) => {				
+				if (device != undefined) {
+					kafkaProducer.send('tracking-gps', JSON.stringify(device.get()),device.id);
+				} else console.log("cant'read", msg);
 			});
 			console.log(msg);
 			
@@ -50,7 +53,7 @@ class TrackCapture {
 			deviceController.input(req.query.msg, (device, timestamp) => {
 			});
 			kernoDevices.process(req.query.msg, (d, t) => {
-				kernoMonitor.updateDevice(d);
+				//kernoMonitor.updateDevice(d);
 			});
 			if (DEBUG_LEVEL >= 5) console.log(req.query.msg);
 			res.end();
@@ -109,31 +112,31 @@ class TrackCapture {
 
 		httpServer.post('/device/:id/update/state/silence', (req, res) => {
 			deviceController.processStates(req, res, (device) => {
-				kernoMonitor.updateDevice(device);
+				//kernoMonitor.updateDevice(device);
 				res.end(JSON.stringify(device.getAllSetup()));
 			});
 		});
 		httpServer.post('/device/:id/update/config', (req, res) => {
 			deviceController.processConfig(req, res, (device, errs) => {
-				kernoMonitor.updateDevice(device);
+				//kernoMonitor.updateDevice(device);
 				res.end(JSON.stringify({ "result": "ok", "errors": errs }));
 			});
 		});
 		httpServer.post('/device/:id/update/state', (req, res) => {
 			deviceController.processStatesFull(req, res, (device) => {
-				kernoMonitor.updateDevice(device);
+				//kernoMonitor.updateDevice(device);
 				res.end(`{"result":"ok"}`);
 			});
 		});
 		httpServer.post('/device/:id/setup/state', (req, res) => {
 			deviceController.setSetupRequest(req, res, (device) => {
-				kernoMonitor.updateDevice(device);
+				//kernoMonitor.updateDevice(device);
 			})
 		});
 		httpServer.get('/device/:id/reset', (req, res) => {
 			let device = deviceController.getDevice(req.params.id);
 			device.clearTrack();
-			kernoMonitor.updateDevice(device);
+			//kernoMonitor.updateDevice(device);
 			if (device != null) {
 				res.setHeader('Content-Type', 'application/json');
 				res.end(`{"result":"ok"}`);

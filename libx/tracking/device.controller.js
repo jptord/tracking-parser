@@ -17,7 +17,7 @@ class DeviceController{
         this.dbm 		= dbm;
         this.setup 		= {};
 		this.events 	= [];
-		this.specs 	= [];
+		this.specs 		= [];
 		this.updateTimer(this);
 		this.loadDB();
         this.responsesTimeout = 120000;
@@ -31,7 +31,7 @@ class DeviceController{
 			console.log("loadTrackers.file", file);
 			const data = fs.readFileSync(PATH_TRACKERS+'/'+file);			
 			const gpsspec = new GPSSpecs(JSON.parse(data),this.dbm)
-			gpsspec.save(this.dbm);
+			//gpsspec.save(this.dbm);
 			this.specs.push(gpsspec);			
 		});
 	}

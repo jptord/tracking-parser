@@ -18,6 +18,7 @@ class TcpServer {
         const me = this;
         const server = net.createServer(function (socket) {
             socket.on('data', (data) => {
+                console.log("me.events.length ", me.events.length);
                 me.events.forEach(event => {
                     event(`${data.toString()}`, socket);
                 });

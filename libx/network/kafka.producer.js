@@ -1,11 +1,14 @@
 const { Kafka } = require('kafkajs');
 
-class KafkaGPS{
+class KafkaProducer{
     
     constructor(opts={}){      
         this.kafka      = null;  
         this.isConnected    = true;
-        this.createServer(opts)
+        this.options = opts;
+    }
+    start(){
+        this.createServer(this.options);
     }
     createServer(opts={}){
         this.kafka      = new Kafka({
@@ -16,18 +19,18 @@ class KafkaGPS{
             allowAutoTopicCreation: true,
             transactionTimeout: 1000});
         this.isConnected    = true;
-        this.connectProducer();            
+        this.connectProducer();  
     }
     connectProducer(){        
         
     }
-    async send(topic,msg){
+    async send(topic,msg,key){
       //  if ( !this.producer.isConnected() ) return ;
         try{
             await this.producer.connect()
             await this.producer.send({
                 topic: topic,
-                messages: [{value:msg}],
+                messages: [{key:key,value:msg}],
             })
         }catch(e){
             console.log(e);
@@ -37,4 +40,4 @@ class KafkaGPS{
 }
 
 
-module.exports = { KafkaGPS } ;
+module.exports = { KafkaProducer } ;
