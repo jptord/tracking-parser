@@ -13,68 +13,38 @@
 			"conditions": [
 				{
 					"type": "start",
-					"value": "*HQ",
+					"value": "##,imei",
 					"replace": false
-				},
-				{
-					"type": "end",
-					"value": "#",
-					"replace": true
 				}
 			],
+			"name": "Login Packet",
+			"description": "Login Packet",
+			"setup": false,
 			"type": "plain",
 			"splitter": ",",
-			"location": {
-				"type": "index",
-				"indexLat": 5,
-				"indexLon": 7,
-				"format": "WGS84",
-				"formatType": "DMMJ",
-				"indexNS": 6,
-				"indexWE": 8
-			},
-			"time": {
-				"type": "index",
-				"indexTime": 3,
-				"indexDate": 11,
-				"formatType": "format",
-				"format": "DDMMYYhhmsss",
-				"zone": 0
-			},
 			"identifier": {
 				"type": "index",
 				"indexId": 1,
-				"data": "number",
-				"process": "encrypt"
+				"data": "string",
+				"process": "none"
 			},
 			"data": {
 				"1": {
-					"field": "IMEI"
-				},
-				"2": {
-					"field": "EVENT",
-					"type": "enum",
-					"convert": "enum",
+					"field": "IMEI",
+					"type": "substring",
+					"split": ":",
 					"value": {
-						"V0": {
-							"name": "INITIAL",
-							"description": "INITIAL"
-						},
-						"V1": {
-							"name": "TRACK",
-							"description": "TRACK"
-						},
-						"HTBT": {
-							"name": "SLEEP",
-							"description": "SLEEP"
+						"1": {
+							"name": "IMEI",
+							"description": "IMEI",
+							"type": "string"
 						}
 					}
-				},
-				"9": {
-					"field": "SPEED",
-					"type": "number"
 				}
-			}
+			},
+			"output": "tcp",
+			"param": [],
+			"sendCommand": "LOAD"
 		}
 	]
 }
