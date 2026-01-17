@@ -68,8 +68,8 @@
 				{"name":"SPEED","default":0,"metadata":"SPEED","bytetype":"byte","type":"number"},
 				{"name":"DIRECTION","default":0,"metadata":"DIRECTION","bytetype":"int","type":"number"},
 				{"name":"IGNITION","default":0,"metadata":"EVENT","bytetype":"byte","type":"enum","values":[
-					{"value":1,"name":"IGNITION_ON"},
-					{"value":0,"name":"IGNITION_OFF"}
+					{"value":1,"name":1},
+					{"value":0,"name":0}
 				]},
 				{"name":"VEHICLE_THEFT","default":0,"metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
 					{"value":1,"name":"VEHICLE_THEFT"}

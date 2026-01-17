@@ -9,51 +9,34 @@ const { DeviceController } = require('./tracking/device.controller.js');
 const { json } = require('body-parser');
 //const { KernoMonitor } = require('./tracking/monitor');
 
-const httpServer 		= new HttpServer({ port: process.env.HTTP_PORT, publicFolder: "public" });
-const tcpServer 		= new TcpServer({ port: process.env.TCP_PORT });
-const udpServer 		= new UdpServer({ port: process.env.UDP_PORT });
-const dbm 				= new DBManager({ name: 'tracking-capture' });
-const kafkaProducer 	= new KafkaProducer({ id:'tracking-capture-1',brokers: ["172.20.50.59:9092"] });
+const httpServer 				= new HttpServer({ port: process.env.HTTP_PORT, publicFolder: "public" });
+const tcpServer 				= new TcpServer({ port: process.env.TCP_PORT });
+const udpServer 				= new UdpServer({ port: process.env.UDP_PORT });
+const dbm 							= new DBManager({ name: 'tracking-capture' });
+const kafkaProducer 		= new KafkaProducer({ id: 'tracking-capture-1', brokers: ["172.20.50.59:9092"] });
 const deviceController 	= new DeviceController(tcpServer, udpServer, kafkaProducer, dbm);
 //const kernoMonitor 	= new KernoMonitor({ port: 7777, app: httpServer });
-const tcpClient 		= new TcpClient({ host: '172.20.50.52', port:'9999', jsonmode:false});
+const tcpClient = new TcpClient({ host: '172.20.50.52', port: '9999', jsonmode: false });
 tcpClient.start();
 class TrackCapture {
 	constructor() {
-		
+
 	}
-	start() {
-		console.info("TrackCapture 3.0.0");
-		httpServer.start();
-		tcpServer.start();
-		udpServer.start();
-		kafkaProducer.start();
-		//kernoMonitor.start();
+	setupInput() {
 		tcpServer.addReceiveEvent((msg, socket) => {
 			tcpClient.send(msg);
 			console.log('tcpServer.addReceiveEvent: ' + msg);
 			deviceController.input(msg, socket, (device, timestamp) => {
-				if (device != undefined) {
-					device.setTcp(socket);
-					//kernoMonitor.updateDevice(device);
-					//kafkaProducer.send('tracking-a', JSON.stringify(device.get()),device.id);
-				} else console.log("cant'read", msg);
+				if (device == undefined) console.log("cant'read", msg);
 			});
-			console.log(msg);
-			
 		});
 		udpServer.addReceiveEvent((msg) => {
-			console.log('udpServer.addReceiveEvent: ' + msg);			
-			deviceController.input(msg, null, (device, timestamp) => {				
-				if (device != undefined) {
-					//kafkaProducer.send('tracking-gps', JSON.stringify(device.get()),device.id);
-				} else console.log("cant'read", msg);
+			console.log('udpServer.addReceiveEvent: ' + msg);
+			deviceController.input(msg, null, (device, timestamp) => {
+				if (device == undefined) console.log("cant'read", msg);
 			});
-			console.log(msg);
-			
 		});
 		httpServer.get('/data', (req, res) => {
-
 			deviceController.input(req.query.msg, (device, timestamp) => {
 			});
 			kernoDevices.process(req.query.msg, (d, t) => {
@@ -62,8 +45,8 @@ class TrackCapture {
 			if (DEBUG_LEVEL >= 5) console.log(req.query.msg);
 			res.end();
 		});
-		/* Output Data */
-		/* Common API */
+	}
+	setupOutput(){
 		httpServer.get('/connected', (req, res) => {
 			console.log('connected test');
 			res.end(JSON.stringify({ result: "ok" }));
@@ -157,6 +140,16 @@ class TrackCapture {
 			res.setHeader('Content-Type', 'application/json');
 			res.end(JSON.stringify({ "tracks": device.getTracksHistory() }));
 		});
+	}
+	start() {
+		console.info("TrackCapture 3.0.0");
+		httpServer.start();
+		tcpServer.start();
+		udpServer.start();
+		kafkaProducer.start();
+
+		this.setupInput();
+		this.setupOutput();		
 	}
 }
 module.exports = { TrackCapture };

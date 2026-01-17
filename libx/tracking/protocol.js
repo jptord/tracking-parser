@@ -42,6 +42,7 @@ class Protocol{
 			data.time = this.processTime(msgData,split_data);
 			data.location = this.processLocation(msgData,split_data);
 			data.metadata = this.processMetadata(msgData,split_data);
+		//console.log("pre.data",data);
 		}
 		else if (this.type=="json"){
 			let json_data = "";
@@ -184,14 +185,13 @@ class Protocol{
 							if (this.data[k].value[i].type == "hex")
 								metadata[this.data[k].field][this.data[k].value[i].name] = parseInt(metadata[this.data[k].field][this.data[k].value[i].name],16);
 							if (this.data[k].value[i].type == "number")
-								metadata[this.data[k].field][this.data[k].value[i].name] = Number(metadata[this.data[k].field][this.data[k].value[i].name]);
-							
+								metadata[this.data[k].field][this.data[k].value[i].name] = Number(metadata[this.data[k].field][this.data[k].value[i].name]);							
 						}
 
 					if (this.data[k].round!=undefined)
 						metadata[this.data[k].field] = Math.round(metadata[this.data[k].field] * Math.pow(10, this.data[k].round)) / Math.pow(10, this.data[k].round)					
 				
-				}if (this.data[k].type == "substring_enum"){
+				}else if (this.data[k].type == "substring_enum"){
 						let substring = val.split(this.data[k].split);
 						metadata[this.data[k].field]={};
 						console.log("substring.length",substring.length);
@@ -217,6 +217,7 @@ class Protocol{
 					metadata[this.data[k].field] = val;
 			}
 		});
+		console.log("metadata",metadata);
 		return metadata;
 	}
 }

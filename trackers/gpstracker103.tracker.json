@@ -13,7 +13,17 @@
 			"conditions": [
 				{
 					"type": "start",
-					"value": "##,imei",
+					"value": "##,imei:",
+					"replace": false
+				},
+				{
+					"type": "contain",
+					"value": "imei:",
+					"replace": true
+				},
+				{
+					"type": "contain",
+					"value": ",A;",
 					"replace": false
 				}
 			],
@@ -45,6 +55,110 @@
 			"output": "tcp",
 			"param": [],
 			"sendCommand": "LOAD"
+		},
+		{
+			"conditions": [
+				{
+					"type": "start",
+					"value": "imei:",
+					"replace": true
+				},
+				{
+					"type": "contain",
+					"value": ",tracker,",
+					"replace": false
+				},
+				{
+					"type": "contain",
+					"value": ",F,",
+					"replace": false
+				}
+			],
+			"name": "Track Packet",
+			"description": "Track Packet",
+			"setup": false,
+			"type": "plain",
+			"splitter": ",",
+			"identifier": {
+				"type": "index",
+				"indexId": 0,
+				"data": "string",
+				"process": "none"
+			},
+			"time": {
+				"type": "index",
+				"indexTime": 2,
+				"indexDate": -1,
+				"formatType": "format",
+				"format": "YYMMDDhhmsss",
+				"zone": 0
+			},
+			"location": {
+				"type": "index",
+				"indexLat": 7,
+				"indexLon": 9,
+				"format": "WGS84",
+				"formatType": "DMMJ",
+				"indexNS": 8,
+				"indexWE": 10
+			},
+			"data": {
+				"0": {
+					"field": "IMEI",
+					"type": "string"
+				},
+				"3": {
+					"field": "BATTERY",
+					"type": "string"
+				},
+				"11": {
+					"field": "SPEED",
+					"type": "number"
+				}
+			},
+			"output": "tcp",
+			"param": []
+		},
+		{
+			"conditions": [
+				{
+					"type": "start",
+					"value": "imei:",
+					"replace": true
+				},
+				{
+					"type": "contain",
+					"value": ",status,",
+					"replace": false
+				}
+			],
+			"name": "Track Status",
+			"description": "Track Status",
+			"setup": false,
+			"type": "plain",
+			"splitter": ",",
+			"identifier": {
+				"type": "index",
+				"indexId": 0,
+				"data": "string",
+				"process": "none"
+			},
+			"time": {
+				"type": "index",
+				"indexTime": 2,
+				"indexDate": -1,
+				"formatType": "format",
+				"format": "YYMMDDhhmsss",
+				"zone": 0
+			},
+			"data": {
+				"0": {
+					"field": "IMEI",
+					"type": "string"
+				}
+			},
+			"output": "tcp",
+			"param": []
 		}
 	]
 }

@@ -1,0 +1,4 @@
+//0=int 1=long 2=double 3=string(200) 4=uuid 5=char 6=ubyte 7=byte 8=boolean(1=true)
+1|0|SPEED|Speed state
+2|0|DIRECTION|Direction
+3|0|FUELLEVEL|Direction

@@ -3,8 +3,8 @@ const { Device }   	= require("./devicex.js")
 const { Track }   	= require("./track.js")
 //const { Meitrack }  = require("..../trackers/meitrack.js");
 //const { C756track } = require("..../trackers/c756track.js");
-const { GPSSpecs } = require("./gpsspecs.js");
-const  fs 			= require("fs");
+const { GPSSpecs } 	= require("./gpsspecs.js");
+const  fs 					= require("fs");
 
 //const meitrack    	= new Meitrack();
 //const c756track   	= new C756track();
@@ -13,9 +13,9 @@ const PATH_TRACKERS 	= "./trackers/";
 
 class DeviceController{    
 	constructor(tcpServer,udpServer,kafkagps,dbm){
-        this.devices 	= [];
-        this.dbm 		= dbm;
-        this.setup 		= {};
+		this.devices 	= [];
+		this.dbm 			= dbm;
+		this.setup 		= {};
 		this.events 	= [];
 		this.specs 		= [];
 		this.updateTimer(this);
@@ -78,6 +78,8 @@ class DeviceController{
 		if (gpsspec.data.name == "DutE"  ) console.log("data['identifier']",data['identifier']);
 		if (data == undefined) return;
 		let device = this.getDevice(data.identifier, gpsspec);
+		if(device!=undefined)
+			device.setTcp(socket);
 		if (data.location!=undefined && data.time!=undefined){
 			if(data.location.lat!=NaN && data.location.lat!='NaN'  && data.location.lat!=null ){
 				let track = new Track({
@@ -104,21 +106,28 @@ class DeviceController{
 		if (gpsspec.data.name == "DutE"){
 			console.log("data",data);
 		}
+		else console.log("data",data);
 		callback(device);
 	}
 	setStates(data,device,protocol,gpsspec){
+		if (data['states']==null) data['states'] = {};
 		if(protocol.states!=undefined){
 			for(let i=0;i<protocol.states.length;i++){				
 				if(protocol.states[i].type=="number"){
 					device.setState(protocol.states[i].name,data.metadata[protocol.states[i].metadata]);
+					data.states[protocol.states[i].name] = data.metadata[protocol.states[i].metadata];
 				}else if(protocol.states[i].type=="enum"){					
 					for(let j = 0 ;j < protocol.states[i].values.length; j++)
-						if (data.metadata[protocol.states[i].metadata]!=undefined)
-							device.setState(protocol.states[i].name, protocol.states[i].values[j].name);										
+						if (data.metadata[protocol.states[i].metadata]!=undefined){
+							device.setState(protocol.states[i].name, protocol.states[i].values[j].name);
+							data.states[protocol.states[i].name] = protocol.states[i].values[j].name;
+						}
 				}else if(protocol.states[i].type=="substring"){					
 					if (data.metadata[protocol.states[i].metadata]!=undefined)
-						if (data.metadata[protocol.states[i].metadata][protocol.states[i].value]!=undefined)
-							device.setState(protocol.states[i].name, data.metadata[protocol.states[i].metadata]);										
+						if (data.metadata[protocol.states[i].metadata][protocol.states[i].value]!=undefined){
+							device.setState(protocol.states[i].name, data.metadata[protocol.states[i].metadata][protocol.states[i].value]);										
+							data.states[protocol.states[i].name] = data.metadata[protocol.states[i].metadata][protocol.states[i].value];
+						}
 				}else if(protocol.states[i].type=="submetadata"){					
 					if (data.metadata[protocol.states[i].metadata]!=undefined)
 						if (data.metadata[protocol.states[i].metadata][protocol.states[i].submetadata]!=undefined){
@@ -127,6 +136,7 @@ class DeviceController{
 								if (gpsspec.functions[protocol.states[i].function] != undefined)
 									value = gpsspec.functions[protocol.states[i].function](value);
 							device.setState(protocol.states[i].name, value);										
+							data.states[protocol.states[i].name] = value;
 						}
 				}
 			}
@@ -254,7 +264,7 @@ class DeviceController{
 	getDevice(deviceId,gpsspec){
 		let device = this.devices.find( d => d.id == deviceId );
 		if (device==null) {
-			console.log("DeviceController.getDevice new",device);
+			console.log("DeviceController.getDevice new",deviceId, device);
 			device = new Device(this.dbm);
 			device.setId(deviceId);
             device.recoverHistory();   // TO DO 			
