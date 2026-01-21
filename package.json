@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "atx-prettylog": "file:../npm-tools/atx-prettylog",
+    "tracking-common": "file:../npm-tools/tracking-common",
     "atx-bconverter": "^1.0.0",
     "better-sqlite3": "^12.4.1",
     "body-parser": "^1.20.2",

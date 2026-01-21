@@ -8,7 +8,7 @@ class TcpClient {
         this.host = host;
         this.port = port;
         this.jsonmode = jsonmode;
-        this.events = {'data':[],'error':[],'close':[]};
+        this.events = {'data':[],'connect':[],'error':[],'close':[]};
     }
     on(ev,fn){
         this.events[ev].push(fn);
@@ -18,21 +18,11 @@ class TcpClient {
         const client = this.client;
         client.connect(self.port, self.host, function() {
             console.info(`TCPClient on ${self.host}:${self.port} connected`);
+            self.events['connect'].forEach(event => event(client));           
         });
 
-        client.on('data', function(data) {
-            if(self.jsonmode){
-                let jsondata;            
-                try{
-                    jsondata = JSON.parse(data.toString());
-                }catch(e){}
-                if (jsondata==null)
-                    self.events['data'].forEach(event => event(client,{a:'ANY',data:data.toString()}));
-                else
-                    self.events['data'].forEach(event => event(client,jsondata));
-                return;
-            } else       
-                self.events['data'].forEach(event => event(client,`${data.toString()}`));
+        client.on('data', function(data) {					
+					self.events['data'].forEach(event => event(client,data));					
         });
 
         client.on('close', function() {
@@ -54,8 +44,9 @@ class TcpClient {
     }
     send(message){
         const client = this.client;
-        if (client!=null)
+        if (client!=null){
             client.write(message);
+				}
     }
 }
 

@@ -1,12 +1,14 @@
 const dotenv = require('dotenv').config();
+const dotenvuuid = require("./network/auth.uuid").config();
+
 const { HttpServer } = require("./network/http.server.js");
 const { TcpServer } = require("./network/tcp.server.js");
 const { UdpServer } = require("./network/udp.server.js");
-const { TcpClient } = require("./network/tcp.client.js");
 const { DBManager } = require("./database/dbmanager.js");
 const { KafkaProducer } = require("./network/kafka.producer.js")
 const { DeviceController } = require('./tracking/device.controller.js');
 const { json } = require('body-parser');
+const { NodeControllerClient } = require('./network/node.controller.client.js');
 //const { KernoMonitor } = require('./tracking/monitor');
 
 const httpServer 				= new HttpServer({ port: process.env.HTTP_PORT, publicFolder: "public" });
@@ -15,16 +17,17 @@ const udpServer 				= new UdpServer({ port: process.env.UDP_PORT });
 const dbm 							= new DBManager({ name: 'tracking-capture' });
 const kafkaProducer 		= new KafkaProducer({ id: 'tracking-capture-1', brokers: ["172.20.50.59:9092"] });
 const deviceController 	= new DeviceController(tcpServer, udpServer, kafkaProducer, dbm);
+const nodeControllerClient = new NodeControllerClient();
 //const kernoMonitor 	= new KernoMonitor({ port: 7777, app: httpServer });
-const tcpClient = new TcpClient({ host: '172.20.50.52', port: '9999', jsonmode: false });
-tcpClient.start();
+//const nodeTcpClient = new TcpClient({ host: process.env.GATEWAY_PARSER_HOST, port: process.env.GATEWAY_PARSER_PORT, jsonmode: false });
+
 class TrackCapture {
 	constructor() {
 
 	}
-	setupInput() {
+	setupInput() {		
 		tcpServer.addReceiveEvent((msg, socket) => {
-			tcpClient.send(msg);
+			//nodeTcpClient.send(msg);
 			console.log('tcpServer.addReceiveEvent: ' + msg);
 			deviceController.input(msg, socket, (device, timestamp) => {
 				if (device == undefined) console.log("cant'read", msg);
@@ -143,10 +146,12 @@ class TrackCapture {
 	}
 	start() {
 		console.info("TrackCapture 3.0.0");
+
 		httpServer.start();
 		tcpServer.start();
 		udpServer.start();
 		kafkaProducer.start();
+		nodeControllerClient.start();
 
 		this.setupInput();
 		this.setupOutput();		
