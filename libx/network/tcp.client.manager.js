@@ -4,8 +4,9 @@ const net = require('net');
 
 class TcpClientManager {
 		className = 'TCClient';
-		constructor({host, port, jsonmode=true}){
+		constructor({host, port, mode="enocodeUuid|raw"}){
 			this.nodeTcpClient = new TcpClient({ host: host, port: port });		
+			this.mode = mode;
 			this.host = host;
 			this.port = port;
 			this.events = {'data':[],'connect':[],'error':[],'close':[]};
@@ -18,37 +19,29 @@ class TcpClientManager {
 		start(){
 				const self = this;
 				const client = this.nodeTcpClient;
-				client.start();
 				client.on('connect', (client) => {
 						console.info(`TcpClientManager on ${self.host}:${self.port} connected`);
 						self.events['connect'].forEach(event => event(client));           
 				});
 
 				client.on('data', function(client, data) {
-					const uuid = Buffer.from(data.subarray(0,4)).toString('hex');
-					const len = Buffer.from(data.subarray(4,5)).readUInt8(0);
-					const action = Buffer.from(data.subarray(5,5+len)).toString();
-					const dataEnd = Buffer.from(data.subarray(5+len));
-					/*console.debug("data",data);
-					console.debug("uuid",uuid);
-					console.debug("len",len);
-					console.debug("action",action);
-					console.debug("dataEnd",dataEnd);*/
-					self.events['data'].forEach(event => event(client,dataEnd));
-					if (self.events[action]!=null)
-						self.events[action].forEach(event => event(client,dataEnd,uuid));
-						/*if(self.jsonmode){
-								let jsondata;            
-								try{
-										jsondata = JSON.parse(data.toString());
-								}catch(e){}
-								if (jsondata==null)
-										self.events['data'].forEach(event => event(client,{a:'ANY',data:data.toString()}));
-								else
-										self.events['data'].forEach(event => event(client,jsondata));
-								return;
-						} else       
-								self.events['data'].forEach(event => event(client,`${data.toString()}`));*/
+					if (self.mode == "enocodeUuid") {
+						const uuid = Buffer.from(data.subarray(0,4)).toString('hex');
+						const len = Buffer.from(data.subarray(4,5)).readUInt8(0);
+						const action = Buffer.from(data.subarray(5,5+len)).toString();
+						const payload = Buffer.from(data.subarray(5+len));
+					/*	console.debug("data",data);
+						console.debug("uuid",uuid);
+						console.debug("len",len);
+						console.debug("action",action);
+						console.debug("dataEnd",dataEnd);*/
+						
+						self.events['data'].forEach(event => event(payload));
+						if (self.events[action]!=null)
+							self.events[action].forEach(event => event(payload,client,uuid));
+					}else if (self.mode == "raw"){
+						self.events['data'].forEach(event => event(data));
+					}
 				});
 
 				client.on('close', function() {
@@ -57,22 +50,24 @@ class TcpClientManager {
 						self.client = null;
 				});
 				client.on('error', function(e) {
-						if (e.code == 'ECONNREFUSED' || e.code == 'ECONNRESET'){
-								console.log(`TCPClient on ${self.host}:${self.port} error, reconnecting`);
-								self.client = null;
-								setTimeout(()=>{
-										self.client = new net.Socket();
-										self.start();
-								},3000);   
-						}else
-								self.events['error'].forEach(event => event(client));
+					self.events['error'].forEach(event => event(client));
 				});
+				client.start();
 		}
 		send(message){
-				const client = this.client;
+				const client = this.nodeTcpClient;
 				if (client!=null){
-						client.write(message);
+						client.send(message);
 				}
+		}
+		
+		emit(event, data){
+			const client = this.nodeTcpClient;
+			const len = Buffer.alloc(1);
+			len.writeUint8(event.length,0);
+			const uuid = process.env.UUID;
+			const dataBuffer = Buffer.concat([Buffer.from(uuid, 'hex'), len, Buffer.from(event), Buffer.from(data)]);
+			client.send(dataBuffer);
 		}
 }
 

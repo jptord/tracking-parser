@@ -26,8 +26,12 @@ class TcpClient {
 
         client.on('close', function() {
             console.log(`TCPClient on ${self.host}:${self.port} closed`);
-            self.events['close'].forEach(event => event(client));                        
-            self.client = null;
+            self.events['close'].forEach(event => event(client));               
+						self.client = null;
+							/*setTimeout(()=>{
+									self.client = new net.Socket();
+									self.start();
+							},3000);   */
         });
         client.on('error', function(e) {
             if (e.code == 'ECONNREFUSED' || e.code == 'ECONNRESET'){
