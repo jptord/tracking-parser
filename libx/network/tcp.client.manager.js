@@ -4,8 +4,10 @@ const net = require('net');
 
 class TcpClientManager {
 		className = 'TCClient';
-		constructor({host,port, jsonmode=true}){
-			this.nodeTcpClient = new TcpClient({ host: process.env.GATEWAY_PARSER_HOST, port: process.env.GATEWAY_PARSER_PORT, jsonmode: true });		
+		constructor({host, port, jsonmode=true}){
+			this.nodeTcpClient = new TcpClient({ host: host, port: port });		
+			this.host = host;
+			this.port = port;
 			this.events = {'data':[],'connect':[],'error':[],'close':[]};
 		}
 		on(ev,fn){
@@ -13,18 +15,16 @@ class TcpClientManager {
 					this.events[ev] = [];
 			this.events[ev].push(fn);
 		}
-		emit(){
-
-		}
 		start(){
 				const self = this;
-				const client = this.client;
-				client.connect(self.port, self.host, function() {
-						console.info(`TCPClient on ${self.host}:${self.port} connected`);
+				const client = this.nodeTcpClient;
+				client.start();
+				client.on('connect', (client) => {
+						console.info(`TcpClientManager on ${self.host}:${self.port} connected`);
 						self.events['connect'].forEach(event => event(client));           
 				});
 
-				client.on('data', function(data) {
+				client.on('data', function(client, data) {
 					const uuid = Buffer.from(data.subarray(0,4)).toString('hex');
 					const len = Buffer.from(data.subarray(4,5)).readUInt8(0);
 					const action = Buffer.from(data.subarray(5,5+len)).toString();

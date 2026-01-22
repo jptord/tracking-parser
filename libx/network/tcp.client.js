@@ -3,11 +3,10 @@ const net = require('net');
 
 class TcpClient {
     className = 'TCClient';
-    constructor({host,port, jsonmode=true}){
+    constructor({host,port}){
         this.client = new net.Socket();
         this.host = host;
         this.port = port;
-        this.jsonmode = jsonmode;
         this.events = {'data':[],'connect':[],'error':[],'close':[]};
     }
     on(ev,fn){
@@ -17,7 +16,7 @@ class TcpClient {
         const self = this;
         const client = this.client;
         client.connect(self.port, self.host, function() {
-            console.info(`TCPClient on ${self.host}:${self.port} connected`);
+            console.log(`TCPClient on ${self.host}:${self.port} connected`);
             self.events['connect'].forEach(event => event(client));           
         });
 
