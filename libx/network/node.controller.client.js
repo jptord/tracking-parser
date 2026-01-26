@@ -41,7 +41,7 @@ class NodeControllerClient{
 				});
 			},4000);*/
 
-			
+			/*
 			setTimeout(()=>{
 				const filePath = 'C:\\PerfLogs\\valheim.rar';
 				const fileStream = fs.createReadStream(filePath);
@@ -53,7 +53,7 @@ class NodeControllerClient{
 				fileStream.on('end', () => {					
 					console.log("sended");
 				});
-			},4000);
+			},4000);*/
 
 			
 		});
