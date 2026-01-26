@@ -1,9 +1,10 @@
 
-const { Device }   	= require("./devicex.js")
+const { Device }   	= require("./device.js")
 const { Track }   	= require("./track.js")
 //const { Meitrack }  = require("..../trackers/meitrack.js");
 //const { C756track } = require("..../trackers/c756track.js");
 const { GPSSpecs } 	= require("./gpsspecs.js");
+const { StateEntity } = require('../entities/state.entity.js')
 const  fs 					= require("fs");
 
 //const meitrack    	= new Meitrack();
@@ -24,7 +25,9 @@ class DeviceController{
 		this.loadTrackers();
     }
 	loadDB(){
-
+		const states = new StateEntity(this.dbm).all();
+		console.log("states",states);
+		this.statesDB = states;
 	}
 	loadTrackers(){
 		fs.readdirSync(PATH_TRACKERS).forEach((file) => {
@@ -101,6 +104,12 @@ class DeviceController{
 			device.setType(gpsspec.data.type); 
 		}
 		this.setStates(data,device,protocol,gpsspec);
+		
+		if (data.location!=undefined && data.time!=undefined)
+			this.devices.recordStates(data.time, data['states'],this.statesDB);
+		else
+			this.devices.recordStates(Date.now, data['states'],this.statesDB);
+
 		this.setConfigs(data,device,protocol);
 		this.process_protocol(device,gpsspec,protocol,{body:{}});
 		if (gpsspec.data.name == "DutE"){

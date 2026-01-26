@@ -23,7 +23,7 @@ const nodeControllerClient = new NodeControllerClient();
 
 class TrackCapture {
 	constructor() {
-
+		
 	}
 	setupInput() {		
 		tcpServer.addReceiveEvent((msg, socket) => {

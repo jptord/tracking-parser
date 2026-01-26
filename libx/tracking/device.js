@@ -107,6 +107,26 @@ class Device {
 			track: track,
 		});
 	}
+	recordStates(time, states, statesDB) {
+		const chunk={
+			t:time,
+			states:[],
+		}
+		Object.keys(states).forEach(name=>{
+			const state = statesDB.find(s=>s.name===name);
+			if (state==undefined) return;
+			chunk.states.push({
+					t: time,
+					state: state.id,
+					type: state.bytetype,
+					value: states[name]
+				});
+		});	
+		console.log("recordState",chunk);
+	}
+	getRecordStates() {
+		return this.recordStates;
+	}
 	//TREBOL-45 Agregar tiempo de retención de datos de servidor
 	createRecords(tracks) {
 		this.records.push({
@@ -156,7 +176,16 @@ class Device {
 				this.last = tracksTrim[tracksTrim.length - 1];
 			}
 		}
-		return { "id": this.getId(), "spec": this.gpsspec?.info(), "config": this.config, type: this.type, "elapsed": this.elapsed, "setup": this.setup, "states": this.states, "tracks": this.tracks.length, last: this.last };
+		return { 	"id": this.getId(), 
+							"spec": this.gpsspec?.info(),
+							"config": this.config, 
+							type: this.type, 
+							"elapsed": this.elapsed, 
+							"setup": this.setup, 
+							"states": this.states, 
+							"tracks": this.tracks.length, 
+							"recordStates": this.recordStates.length, 
+							last: this.last };
 	}
 	getApps() {
 		return { "apps": this.apps, "history": this.appsHistory };
