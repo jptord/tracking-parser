@@ -106,9 +106,9 @@ class DeviceController{
 		this.setStates(data,device,protocol,gpsspec);
 		
 		if (data.location!=undefined && data.time!=undefined)
-			this.devices.recordStates(data.time, data['states'],this.statesDB);
+			device.recordStates(data.time, data['states'],this.statesDB);
 		else
-			this.devices.recordStates(Date.now, data['states'],this.statesDB);
+			device.recordStates(Date.now, data['states'],this.statesDB);
 
 		this.setConfigs(data,device,protocol);
 		this.process_protocol(device,gpsspec,protocol,{body:{}});
