@@ -72,23 +72,24 @@
 					{"value":0,"name":0}
 				]},
 				{"name":"VEHICLE_THEFT","default":0,"metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
-					{"value":1,"name":"VEHICLE_THEFT"}
+					{"value":0,"name":"false"},
+					{"value":1,"name":"true"}
 				]},
 				{"name":"SIGNAL","default":"RECOVERY","metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
-					{"value":0,"name":"GPS_SIGNAL_LOST"},
-					{"value":1,"name":"GPS_SIGNAL_RECOVERY"}
+					{"value":0,"name":"false"},
+					{"value":1,"name":"true"}
 				]},
-				{"name":"BATTERY_EXTERNAL","default":"ON","metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
-					{"value":1,"name":"EXTERNAL_BATTERY_ON"},
-					{"value":0,"name":"EXTERNAL_BATTERY_CUT"}
+				{"name":"BATTERY_EXTERNAL","default":"true","metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
+					{"value":1,"name":"true"},
+					{"value":0,"name":"false"}
 				]},
-				{"name":"DISARMED","default":0,"metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
-					{"value":1,"name":"DISARMED"},
-					{"value":0,"name":"ARMED"}
+				{"name":"DISARMED","default":"false","metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
+					{"value":1,"name":"true"},
+					{"value":0,"name":"false"}
 				]},
-				{"name":"SLEEP","dafault":0,"metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
-					{"value":1,"name":"ENTER_SLEEP"},
-					{"value":0,"name":"EXIT_SLEEP"}
+				{"name":"SLEEP","dafault":"false","metadata":"EVENT","bytetype":"byte","lifetime":3600000,"type":"enum","values":[
+					{"value":1,"name":"true"},
+					{"value":0,"name":"false"}
 				]},
 				{"name":"SENSOR_4","dafault":0,"metadata":"ANALOG","bytetype":"byte","type":"substring","value":"SENSOR_4"},
 				{"name":"SENSOR_5","dafault":0,"metadata":"ANALOG","bytetype":"byte","type":"substring","value":"SENSOR_5"}

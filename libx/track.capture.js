@@ -98,6 +98,50 @@ class TrackCapture {
 				res.end();
 		});
 
+		httpServer.get('/device/:id/statesRecords', (req, res) => {
+			res.setHeader('Content-Type', 'application/json');
+			let device = deviceController.getDevice(req.params.id);
+			if (device != null)
+				res.end(JSON.stringify(device.getStatesRecords()));
+			else
+				res.end();
+		});
+		httpServer.get('/device/:id/tracksRecords', (req, res) => {
+			res.setHeader('Content-Type', 'application/json');
+			let device = deviceController.getDevice(req.params.id);
+			if (device != null)
+				res.end(JSON.stringify(device.getTracksRecords()));
+			else
+				res.end();
+		});
+
+		httpServer.get('/device/:id/statesRecordsBytes', (req, res) => {
+			res.setHeader('Content-Type', 'application/json');
+			let device = deviceController.getDevice(req.params.id);
+			if (device != null)
+				res.end(JSON.stringify(device.getStatesRecordsBytes().toString('hex')));
+			else
+				res.end();
+		});
+		httpServer.get('/device/:id/tracksRecordsBytes', (req, res) => {
+			res.setHeader('Content-Type', 'application/json');
+			let device = deviceController.getDevice(req.params.id);
+			if (device != null)
+				res.end(JSON.stringify(device.getTracksRecordsBytes().toString('hex')));
+			else
+				res.end();
+		});		
+
+		httpServer.get('/device/:id/save', (req, res) => {
+			res.setHeader('Content-Type', 'application/json');
+			let device = deviceController.getDevice(req.params.id);
+			if (device != null){
+				device.save( deviceController.dbm );
+				res.end(JSON.stringify({result:"device "+req.params.id+" saved"}));
+			}else
+				res.end();
+		});
+		
 		/* update states */
 
 		httpServer.post('/device/:id/update/state/silence', (req, res) => {

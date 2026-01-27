@@ -114,8 +114,17 @@
 				"11": {
 					"field": "SPEED",
 					"type": "number"
+				},
+				"12": {
+					"field": "DIRECTION",
+					"type": "number"
 				}
 			},
+			"states":[
+				{"name":"SPEED","default":0,"metadata":"SPEED","bytetype":"int","type":"number"},
+				{"name":"BATTERY","default":0,"metadata":"BATTERY","bytetype":"int","type":"number"},
+				{"name":"DIRECTION","default":0,"metadata":"DIRECTION","bytetype":"double","type":"number"}
+			],
 			"output": "tcp",
 			"param": []
 		},

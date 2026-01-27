@@ -100,16 +100,19 @@ class DeviceController{
                 }else{	
                 	device.sortTracks();
                 }
+				device.recordTrack(data.time, track);			
 			}
 			device.setType(gpsspec.data.type); 
 		}
-		this.setStates(data,device,protocol,gpsspec);
+		this.getStates(data,device,protocol,gpsspec);
 		
 		if ( data.time!=undefined)
 			device.recordStates(data.time, data['states'],this.statesDB);
-		else
+		else{
 			device.recordStates(Date.now, data['states'],this.statesDB);
+		}
 
+		this.setStates(data,device,protocol,gpsspec);
 		this.setConfigs(data,device,protocol);
 		this.process_protocol(device,gpsspec,protocol,{body:{}});
 		if (gpsspec.data.name == "DutE"){
@@ -118,23 +121,23 @@ class DeviceController{
 		else console.log("data",data);
 		callback(device);
 	}
-	setStates(data,device,protocol,gpsspec){
+	getStates(data,device,protocol,gpsspec){
 		if (data['states']==null) data['states'] = {};
 		if(protocol.states!=undefined){
 			for(let i=0;i<protocol.states.length;i++){				
 				if(protocol.states[i].type=="number"){
-					device.setState(protocol.states[i].name,data.metadata[protocol.states[i].metadata]);
+					//device.setState(protocol.states[i].name,data.metadata[protocol.states[i].metadata]);
 					data.states[protocol.states[i].name] = data.metadata[protocol.states[i].metadata];
 				}else if(protocol.states[i].type=="enum"){					
 					for(let j = 0 ;j < protocol.states[i].values.length; j++)
 						if (data.metadata[protocol.states[i].metadata]!=undefined){
-							device.setState(protocol.states[i].name, protocol.states[i].values[j].name);
+							//device.setState(protocol.states[i].name, protocol.states[i].values[j].name);
 							data.states[protocol.states[i].name] = protocol.states[i].values[j].name;
 						}
 				}else if(protocol.states[i].type=="substring"){					
 					if (data.metadata[protocol.states[i].metadata]!=undefined)
 						if (data.metadata[protocol.states[i].metadata][protocol.states[i].value]!=undefined){
-							device.setState(protocol.states[i].name, data.metadata[protocol.states[i].metadata][protocol.states[i].value]);										
+							//device.setState(protocol.states[i].name, data.metadata[protocol.states[i].metadata][protocol.states[i].value]);										
 							data.states[protocol.states[i].name] = data.metadata[protocol.states[i].metadata][protocol.states[i].value];
 						}
 				}else if(protocol.states[i].type=="submetadata"){					
@@ -144,11 +147,17 @@ class DeviceController{
 							if (protocol.states[i].function != undefined)
 								if (gpsspec.functions[protocol.states[i].function] != undefined)
 									value = gpsspec.functions[protocol.states[i].function](value);
-							device.setState(protocol.states[i].name, value);										
+							//device.setState(protocol.states[i].name, value);										
 							data.states[protocol.states[i].name] = value;
 						}
 				}
 			}
+		}
+	}
+	setStates(data,device,protocol,gpsspec){
+		const statesKeys = Object.keys(data.states);
+		for(let i=0;i<statesKeys.length;i++){
+			device.setState(statesKeys[i],data.states[statesKeys[i]]);
 		}
 	}
 	setConfigs(data,device,protocol){
@@ -276,7 +285,7 @@ class DeviceController{
 			console.log("DeviceController.getDevice new",deviceId, device);
 			device = new Device(this.dbm);
 			device.setId(deviceId);
-            device.recoverHistory();   // TO DO 			
+			device.recoverHistory();   // TO DO 			
 			device.sortTracks();
 			//DBMcreate device
 			//let dbDevice = this.dbm.devices.get(setId);

@@ -2,11 +2,25 @@
 const fs 							= require('node:fs');
 const decompress 			= require('decompress');
 const { DeviceEntity } 	= require('../entities/device.entity.js');
+const { bytesToState, bytesToStates, stateToBytes, statesToBytes, trackToBytes, tracksToBytes, bytesToTrack, bytesToTracks } = require("atx-bconverter");
 //const { EncoderDevice } 	= require('../encoderdevice.js');
 const { Track }   		= require("./track.js");
+const { StatesRecordEntity } = require('../entities/statesrecord.entity.js');
 
 const HISTORY_MAX_TIME    = 86400000*5;
 const TRACKS_MAX_TIME     = 57600000*5;
+function formatValue(value, bytetype){
+	if (bytetype == 0 || bytetype == 1 || bytetype == 6 || bytetype == 7 ){
+			return isNaN(value)?0:parseInt(value);
+		} else if (bytetype == 2){
+			return isNaN(value)?0:parseFloat(value);
+		} else if (bytetype == 3 || bytetype == 4 || bytetype == 5 ){
+			return value;
+		} else if (bytetype == 8){
+			return value=='true';
+		} else
+			return value;
+}
 class Device {    
 	constructor(){
 		this.id 						= '0';
@@ -14,6 +28,7 @@ class Device {
 		this.type						= 'apk'; //'app' 'gps' 'mei'
 		this.brand 					= '0';
 		this.model 					= '0';
+		this.enabled				= true;
 		this.elapsed				= 0;
 		this.lasttime				= Date.now();
 		this.socket					= null;
@@ -24,6 +39,10 @@ class Device {
 		this.last						= {};
 		this.states 				= {};
 		this.statesRecords  = [];
+		this.stateOffset 		= -1;
+		this.trackOffset 		= -1;
+		this.statesRecStart	= Date.now();
+		this.tracksRecStart	= Date.now();
 		this.setup 					= {};
 		this.extra					= {};
 		this.config 				= {};
@@ -102,30 +121,47 @@ class Device {
 		this.request.push(request);
 	}
 	recordTrack(time,track) {
-		this.records.push({
-			date: Date.now(),
-			track: track,
+		this.tracksRecords.push({
+			t: Math.round(time/1000),
+			lat: track.lat,
+			lon: track.lon,
+			bat: track.bat,
+			acc: track.acc,
+			stp: track.stp,
 		});
 	}
 	recordStates(time, states, statesDB) {
+		const self = this;
 		const chunk={
-			t:time,
+			t: Math.round(time/1000),
 			states:[],
 		}
 		Object.keys(states).forEach(name=>{
 			const state = statesDB.find(s=>s.name===name);
 			if (state==undefined) return;
+			console.log("self.states[name] == states[name]",self.states[name], "==", states[name]);
+			if (self.states[name] == states[name]) return;
 			chunk.states.push({
-					t: time,
 					state: state.id,
 					type: state.bytetype,
-					value: states[name]
+					value: formatValue(states[name],state.bytetype)
 				});
 		});	
+		if (time!=undefined && chunk.states.length>0)
+			this.statesRecords.push(chunk);
 		console.log("recordState",chunk);
 	}
-	getRecordStates() {
-		return this.recordStates;
+	getStatesRecords() {
+		return this.statesRecords;
+	}
+	getTracksRecords() {
+		return this.tracksRecords;
+	}
+	getStatesRecordsBytes() {
+		return statesToBytes(this.statesRecords);
+	}
+	getTracksRecordsBytes() {
+		return tracksToBytes(this.tracksRecords);
 	}
 	//TREBOL-45 Agregar tiempo de retención de datos de servidor
 	createRecords(tracks) {
@@ -184,7 +220,7 @@ class Device {
 							"setup": this.setup, 
 							"states": this.states, 
 							"tracks": this.tracks.length, 
-							"recordStates": this.recordStates.length, 
+							"statesRecords": this.statesRecords.length, 
 							last: this.last };
 	}
 	getApps() {
@@ -364,10 +400,20 @@ class Device {
 		deviceEntity.setType(this.type);
 		deviceEntity.setBrand(this.brand);
 		deviceEntity.setModel(this.model);
-		deviceEntity.setGpsspecId(this.gpsspec_id);
+		deviceEntity.setGpsspecId(this.gpsspec?.code);
 		deviceEntity.setEnabled(this.enabled);
 		deviceEntity.save();
+		
+		const start = this.start;
+		const time = Date.now();
 
+		const statesRecordEntity = new StatesRecordEntity(dbm);
+		//statesRecordEntity.setId(this.id);
+		statesRecordEntity.setDeviceId(this.id);
+		statesRecordEntity.setFromdate(this.statesRecStart);
+		statesRecordEntity.setTodate(time);
+		statesRecordEntity.setData(statesToBytes(this.statesRecords));
+		statesRecordEntity.save();
 	}
 	setLast(track) {
 		this.last = track;
