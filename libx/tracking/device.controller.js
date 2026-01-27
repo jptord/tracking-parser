@@ -105,7 +105,7 @@ class DeviceController{
 		}
 		this.setStates(data,device,protocol,gpsspec);
 		
-		if (data.location!=undefined && data.time!=undefined)
+		if ( data.time!=undefined)
 			device.recordStates(data.time, data['states'],this.statesDB);
 		else
 			device.recordStates(Date.now, data['states'],this.statesDB);
