@@ -426,7 +426,7 @@ class Device {
 				statesRecordEntityPast.setDeviceId(this.id);
 				statesRecordEntityPast.setFromdate(minDate);
 				statesRecordEntityPast.setTodate(self.statesRecOffset);
-				statesRecordEntityPast.setData(statesToBytes(this.pastRecords));
+				statesRecordEntityPast.setData(statesToBytes(pastRecords));
 				statesRecordEntityPast.save();
 			}
 			if(currentRecords.length>0){
@@ -434,7 +434,7 @@ class Device {
 				statesRecordEntity.setDeviceId(this.id);
 				statesRecordEntity.setFromdate(self.statesRecOffset);
 				statesRecordEntity.setTodate(maxDate);
-				statesRecordEntity.setData(statesToBytes(this.currentRecords));
+				statesRecordEntity.setData(statesToBytes(currentRecords));
 				statesRecordEntity.save();
 			}
 			self.statesRecOffset = Date.now();
@@ -452,7 +452,7 @@ class Device {
 				tracksRecordEntityPast.setDeviceId(this.id);
 				tracksRecordEntityPast.setFromdate(minDate);
 				tracksRecordEntityPast.setTodate(self.tracksRecOffset);
-				tracksRecordEntityPast.setData(tracksToBytes(this.pastRecords));
+				tracksRecordEntityPast.setData(tracksToBytes(pastRecords));
 				tracksRecordEntityPast.save();
 			}
 			if(currentRecords.length>0){
@@ -460,7 +460,7 @@ class Device {
 				tracksEntity.setDeviceId(this.id);
 				tracksEntity.setFromdate(self.tracksRecOffset);
 				tracksEntity.setTodate(maxDate);
-				tracksEntity.setData(tracksToBytes(this.currentRecords));
+				tracksEntity.setData(tracksToBytes(currentRecords));
 				tracksEntity.save();
 			}
 			self.tracksRecOffset = Date.now();
