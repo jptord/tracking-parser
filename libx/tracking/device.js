@@ -162,11 +162,11 @@ class Device {
 		return this.tracksRecords;
 	}
 	getStatesRecordsCurrent() {
-		const currentRecords = this.statesRecords.filter(s=>s.t > self.statesRecOffset);
+		const currentRecords = this.statesRecords.filter(s=>s.t > this.statesRecOffset);
 		return currentRecordss;
 	}
 	getTracksRecordsCurrent() {
-		const currentRecords = this.tracksRecords.filter(s=>s.t > self.tracksRecOffset);
+		const currentRecords = this.tracksRecords.filter(s=>s.t > this.tracksRecOffset);
 		return this.currentRecords;
 	}
 	getStatesRecordsBytes() {
@@ -175,13 +175,13 @@ class Device {
 	getTracksRecordsBytes() {
 		return tracksToBytes(this.tracksRecords);
 	}
-	getStatesRecordsCurrent() {
+	getStatesRecordsBytesCurrent() {
 		const currentRecords = this.statesRecords.filter(s=>s.t > this.statesRecOffset);
-		return statesToBytes(currentRecordss);
+		return statesToBytes(currentRecords);
 	}
-	getTracksRecordsCurrent() {
+	getTracksRecordsBytesCurrent() {
 		const currentRecords = this.tracksRecords.filter(s=>s.t > this.tracksRecOffset);
-		return tracksToBytes(this.currentRecords);
+		return tracksToBytes(currentRecords);
 	}
 	//TREBOL-45 Agregar tiempo de retención de datos de servidor
 	createRecords(tracks) {
