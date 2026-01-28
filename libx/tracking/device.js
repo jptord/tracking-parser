@@ -42,8 +42,8 @@ class Device {
 		this.statesRecords  = [];
 		this.stateOffset 		= -1;
 		this.trackOffset 		= -1;
-		this.statesRecOffset	= Date.now();
-		this.tracksRecOffset	= Date.now();
+		this.statesRecOffset	= -1;
+		this.tracksRecOffset	= -1;
 		this.setup 					= {};
 		this.extra					= {};
 		this.config 				= {};
@@ -161,11 +161,27 @@ class Device {
 	getTracksRecords() {
 		return this.tracksRecords;
 	}
+	getStatesRecordsCurrent() {
+		const currentRecords = this.statesRecords.filter(s=>s.t > self.statesRecOffset);
+		return currentRecordss;
+	}
+	getTracksRecordsCurrent() {
+		const currentRecords = this.tracksRecords.filter(s=>s.t > self.tracksRecOffset);
+		return this.currentRecords;
+	}
 	getStatesRecordsBytes() {
 		return statesToBytes(this.statesRecords);
 	}
 	getTracksRecordsBytes() {
 		return tracksToBytes(this.tracksRecords);
+	}
+	getStatesRecordsCurrent() {
+		const currentRecords = this.statesRecords.filter(s=>s.t > self.statesRecOffset);
+		return statesToBytes(currentRecordss);
+	}
+	getTracksRecordsCurrent() {
+		const currentRecords = this.tracksRecords.filter(s=>s.t > self.tracksRecOffset);
+		return tracksToBytes(this.currentRecords);
 	}
 	//TREBOL-45 Agregar tiempo de retención de datos de servidor
 	createRecords(tracks) {
@@ -410,14 +426,14 @@ class Device {
 		deviceEntity.save();
 		
 		const start = this.start;
-		const time = Date.now();
+		const time = Math.round(Date.now()/1000);
 
 		//statesRecordEntity.setId(this.id);
 		this.statesRecords.sort((a,b)=> a.t-b.t );
 		if (this.statesRecords.length>0){
 			const minDate = this.statesRecords[0].t;
 			const maxDate = this.statesRecords[this.statesRecords.length-1].t;
-			const pastRecords = this.statesRecords.filter(s=>s.t < self.statesRecOffset);
+			const pastRecords = this.statesRecords.filter(s=>s.t > self.statesRecOffset && s.t < time);
 			const currentRecords = this.statesRecords.filter(s=>s.t > self.statesRecOffset);
 			console.log("state.pastRecords",pastRecords.length);
 			console.log("state.currentRecords",currentRecords.length);
@@ -437,14 +453,14 @@ class Device {
 				statesRecordEntity.setData(statesToBytes(currentRecords));
 				statesRecordEntity.save();
 			}
-			self.statesRecOffset = Date.now();
+			self.statesRecOffset = time;
 		}
 		this.tracksRecords.sort((a,b)=> a.t-b.t );
 		if (this.tracksRecords.length>0){
 			const minDate = this.tracksRecords[0].t;
 			const maxDate = this.tracksRecords[this.tracksRecords.length-1].t;
-			const pastRecords = this.tracksRecords.filter(s=>s.t < self.tracksRecOffset);
-			const currentRecords = this.tracksRecords.filter(s=>s.t > self.tracksRecOffset);
+			const pastRecords = this.tracksRecords.filter(s=>s.t > self.tracksRecOffset && s.t < time);
+			const currentRecords = this.tracksRecords.filter(s=>s.t > self.statesRecOffset);
 			console.log("tracks.pastRecords",pastRecords.length);
 			console.log("tracks.currentRecords",currentRecords.length);
 			if(pastRecords.length>0){
@@ -463,7 +479,7 @@ class Device {
 				tracksEntity.setData(tracksToBytes(currentRecords));
 				tracksEntity.save();
 			}
-			self.tracksRecOffset = Date.now();
+			self.tracksRecOffset = time;
 		}
 	}
 	setLast(track) {

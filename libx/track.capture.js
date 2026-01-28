@@ -115,6 +115,23 @@ class TrackCapture {
 				res.end();
 		});
 
+		httpServer.get('/device/:id/statesRecordsCurrent', (req, res) => {
+			res.setHeader('Content-Type', 'application/json');
+			let device = deviceController.getDevice(req.params.id);
+			if (device != null)
+				res.end(JSON.stringify(device.getStatesRecordsCurrent()));
+			else
+				res.end();
+		});
+		httpServer.get('/device/:id/tracksRecordsCurrent', (req, res) => {
+			res.setHeader('Content-Type', 'application/json');
+			let device = deviceController.getDevice(req.params.id);
+			if (device != null)
+				res.end(JSON.stringify(device.getTracksRecordsCurrent()));
+			else
+				res.end();
+		});
+
 		httpServer.get('/device/:id/statesRecordsBytes', (req, res) => {
 			res.setHeader('Content-Type', 'application/json');
 			let device = deviceController.getDevice(req.params.id);
