@@ -163,11 +163,11 @@ class Device {
 	}
 	getStatesRecordsCurrent() {
 		const currentRecords = this.statesRecords.filter(s=>s.t > this.statesRecOffset);
-		return currentRecordss;
+		return currentRecords;
 	}
 	getTracksRecordsCurrent() {
 		const currentRecords = this.tracksRecords.filter(s=>s.t > this.tracksRecOffset);
-		return this.currentRecords;
+		return currentRecords;
 	}
 	getStatesRecordsBytes() {
 		return statesToBytes(this.statesRecords);
