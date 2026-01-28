@@ -176,11 +176,11 @@ class Device {
 		return tracksToBytes(this.tracksRecords);
 	}
 	getStatesRecordsCurrent() {
-		const currentRecords = this.statesRecords.filter(s=>s.t > self.statesRecOffset);
+		const currentRecords = this.statesRecords.filter(s=>s.t > this.statesRecOffset);
 		return statesToBytes(currentRecordss);
 	}
 	getTracksRecordsCurrent() {
-		const currentRecords = this.tracksRecords.filter(s=>s.t > self.tracksRecOffset);
+		const currentRecords = this.tracksRecords.filter(s=>s.t > this.tracksRecOffset);
 		return tracksToBytes(this.currentRecords);
 	}
 	//TREBOL-45 Agregar tiempo de retención de datos de servidor
