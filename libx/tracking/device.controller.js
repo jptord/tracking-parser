@@ -285,7 +285,8 @@ class DeviceController{
 			console.log("DeviceController.getDevice new",deviceId, device);
 			device = new Device(this.dbm);
 			device.setId(deviceId);
-			device.recoverHistory();   // TO DO 			
+			device.loadRecords();
+			//device.recoverHistory();   // TO DO 			
 			device.sortTracks();
 			//DBMcreate device
 			//let dbDevice = this.dbm.devices.get(setId);

@@ -96,7 +96,12 @@ class Device {
 		this.socket.write(Buffer.from(msg));
 		this.socket.pipe(this.socket);
 	}
-
+	loadRecords(){
+		const statesRecords = new StatesRecordEntity(this.dbm);
+		const time = Math.round(Date.now()/1000);
+		const recordsState = this.statesRecords.findBy(`device_id == "${this.id}" and todate between (${time}-86400) and ${time}`);
+		console.log("recordsState",recordsState);
+	}
 	processPendientRequest() {
 		//console.log("process pendients");
 		if (this.setupUpdated) return;
