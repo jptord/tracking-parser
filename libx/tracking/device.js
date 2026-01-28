@@ -6,6 +6,7 @@ const { bytesToState, bytesToStates, stateToBytes, statesToBytes, trackToBytes, 
 //const { EncoderDevice } 	= require('../encoderdevice.js');
 const { Track }   		= require("./track.js");
 const { StatesRecordEntity } = require('../entities/statesrecord.entity.js');
+const { TracksEntity } = require('../entities/tracks.entity.js');
 
 const HISTORY_MAX_TIME    = 86400000*5;
 const TRACKS_MAX_TIME     = 57600000*5;
@@ -41,8 +42,8 @@ class Device {
 		this.statesRecords  = [];
 		this.stateOffset 		= -1;
 		this.trackOffset 		= -1;
-		this.statesRecStart	= Date.now();
-		this.tracksRecStart	= Date.now();
+		this.statesRecOffset	= Date.now();
+		this.tracksRecOffset	= Date.now();
 		this.setup 					= {};
 		this.extra					= {};
 		this.config 				= {};
@@ -129,6 +130,7 @@ class Device {
 			acc: track.acc,
 			stp: track.stp,
 		});
+		this.tracksRecords.sort((a,b)=> a.t-b.t );
 	}
 	recordStates(time, states, statesDB) {
 		const self = this;
@@ -149,7 +151,9 @@ class Device {
 		});	
 		if (time!=undefined && chunk.states.length>0)
 			this.statesRecords.push(chunk);
-		console.log("recordState",chunk);
+		
+		this.statesRecords.sort((a,b)=> a.t-b.t );
+		//console.log("recordState",chunk);
 	}
 	getStatesRecords() {
 		return this.statesRecords;
@@ -395,6 +399,7 @@ class Device {
 		this.setState('SORTED', true);
 	}
 	save(dbm) {
+		const self = this;
 		const deviceEntity = new DeviceEntity(dbm);
 		deviceEntity.setId(this.id);
 		deviceEntity.setType(this.type);
@@ -407,13 +412,53 @@ class Device {
 		const start = this.start;
 		const time = Date.now();
 
-		const statesRecordEntity = new StatesRecordEntity(dbm);
 		//statesRecordEntity.setId(this.id);
-		statesRecordEntity.setDeviceId(this.id);
-		statesRecordEntity.setFromdate(this.statesRecStart);
-		statesRecordEntity.setTodate(time);
-		statesRecordEntity.setData(statesToBytes(this.statesRecords));
-		statesRecordEntity.save();
+		this.statesRecords.sort((a,b)=> a.t-b.t );
+		if (this.statesRecords.length>0){
+			const minDate = this.statesRecords[0].t;
+			const maxDate = this.statesRecords[this.statesRecords.length-1].t;
+			pastRecords = this.statesRecords.filter(s=>s.t < self.statesRecOffset);
+			currentRecords = this.statesRecords.filter(s=>s.t < self.statesRecOffset);
+			if(pastRecords.length>0){
+				const statesRecordEntityPast = new StatesRecordEntity(dbm);
+				statesRecordEntityPast.setDeviceId(this.id);
+				statesRecordEntityPast.setFromdate(minDate);
+				statesRecordEntityPast.setTodate(self.statesRecOffset);
+				statesRecordEntityPast.setData(statesToBytes(this.pastRecords));
+				statesRecordEntityPast.save();
+			}
+			if(currentRecords.length>0){
+				const statesRecordEntity = new StatesRecordEntity(dbm);
+				statesRecordEntity.setDeviceId(this.id);
+				statesRecordEntity.setFromdate(self.statesRecOffset);
+				statesRecordEntity.setTodate(maxDate);
+				statesRecordEntity.setData(statesToBytes(this.currentRecords));
+				statesRecordEntity.save();
+			}
+		}
+		this.tracksRecords.sort((a,b)=> a.t-b.t );
+		if (this.tracksRecords.length>0){
+			const minDate = this.tracksRecords[0].t;
+			const maxDate = this.tracksRecords[this.tracksRecords.length-1].t;
+			pastRecords = this.tracksRecords.filter(s=>s.t < self.tracksRecOffset);
+			currentRecords = this.tracksRecords.filter(s=>s.t < self.tracksRecOffset);
+			if(pastRecords.length>0){
+				const tracksRecordEntityPast = new TracksEntity(dbm);
+				tracksRecordEntityPast.setDeviceId(this.id);
+				tracksRecordEntityPast.setFromdate(minDate);
+				tracksRecordEntityPast.setTodate(self.tracksRecOffset);
+				tracksRecordEntityPast.setData(statesToBytes(this.pastRecords));
+				tracksRecordEntityPast.save();
+			}
+			if(currentRecords.length>0){
+				const tracksEntity = new TracksEntity(dbm);
+				tracksEntity.setDeviceId(this.id);
+				tracksEntity.setFromdate(self.tracksRecOffset);
+				tracksEntity.setTodate(maxDate);
+				tracksEntity.setData(statesToBytes(this.currentRecords));
+				tracksEntity.save();
+			}
+		}
 	}
 	setLast(track) {
 		this.last = track;
