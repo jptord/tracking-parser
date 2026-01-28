@@ -419,6 +419,8 @@ class Device {
 			const maxDate = this.statesRecords[this.statesRecords.length-1].t;
 			const pastRecords = this.statesRecords.filter(s=>s.t < self.statesRecOffset);
 			const currentRecords = this.statesRecords.filter(s=>s.t > self.statesRecOffset);
+			console.log("state.pastRecords",pastRecords.length);
+			console.log("state.currentRecords",currentRecords.length);
 			if(pastRecords.length>0){
 				const statesRecordEntityPast = new StatesRecordEntity(dbm);
 				statesRecordEntityPast.setDeviceId(this.id);
@@ -443,6 +445,8 @@ class Device {
 			const maxDate = this.tracksRecords[this.tracksRecords.length-1].t;
 			const pastRecords = this.tracksRecords.filter(s=>s.t < self.tracksRecOffset);
 			const currentRecords = this.tracksRecords.filter(s=>s.t > self.tracksRecOffset);
+			console.log("tracks.pastRecords",pastRecords.length);
+			console.log("tracks.currentRecords",currentRecords.length);
 			if(pastRecords.length>0){
 				const tracksRecordEntityPast = new TracksEntity(dbm);
 				tracksRecordEntityPast.setDeviceId(this.id);
