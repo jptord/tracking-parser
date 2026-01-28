@@ -23,8 +23,10 @@ function formatValue(value, bytetype){
 			return value;
 }
 class Device {    
-	constructor(){
+	constructor(dbm, statesDB){
 		this.id 						= '0';
+		this.dbm						= dbm;
+		this.statesDB				= statesDB;
 		this.uid						= 0;
 		this.type						= 'apk'; //'app' 'gps' 'mei'
 		this.brand 					= '0';
@@ -96,11 +98,21 @@ class Device {
 		this.socket.write(Buffer.from(msg));
 		this.socket.pipe(this.socket);
 	}
-	loadRecords(){
-		const statesRecords = new StatesRecordEntity(this.dbm);
+	loadRecords(dbm){
+		const self = this;
+		const statesRecords = new StatesRecordEntity(dbm);
 		const time = Math.round(Date.now()/1000);
-		const recordsState = this.statesRecords.findBy(`device_id == "${this.id}" and todate between (${time}-86400) and ${time}`);
-		console.log("recordsState",recordsState);
+		const recordsStateDB = statesRecords.findBy(`device_id = '${this.id}' and todate between '${time-86400}' and '${time}'`);
+		console.log("recordsState.length", recordsStateDB.length);
+		recordsStateDB.forEach(row=>{
+			const records = bytesToStates(row.data);
+			console.log("records.length",records.length);
+			records.forEach(r=>{
+				this.statesRecords.push(r)
+			});			
+		});
+		this.statesRecords.sort((a,b)=> a.t-b.t );
+		//console.log("recordsState",recordsState);
 	}
 	processPendientRequest() {
 		//console.log("process pendients");

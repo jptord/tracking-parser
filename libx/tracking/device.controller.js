@@ -283,9 +283,9 @@ class DeviceController{
 		let device = this.devices.find( d => d.id == deviceId );
 		if (device==null) {
 			console.log("DeviceController.getDevice new",deviceId, device);
-			device = new Device(this.dbm);
+			device = new Device(this.dbm,this.statesDB);
 			device.setId(deviceId);
-			device.loadRecords();
+			device.loadRecords(this.dbm);
 			//device.recoverHistory();   // TO DO 			
 			device.sortTracks();
 			//DBMcreate device

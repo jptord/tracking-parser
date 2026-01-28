@@ -96,11 +96,14 @@ class DBManager {
     }
     sqlParams(sql,params){
         console.log("db.sql:",sql);
-        let res =null;
+        let res = null;
         try{
-             res = this.database.db.prepare(sql).all(params);
+						if (params == null)
+             	res = this.database.db.prepare(sql).all();
+						else
+							res = this.database.db.prepare(sql).all(params);
         }catch(e){
-
+					console.error("sqlParams", e);
         }
         return res;
     }

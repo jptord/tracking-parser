@@ -240,11 +240,10 @@ class Entity{
 	}
 	findBy(condition,param,order,desc,limit,offset){
 		const sql = `SELECT * FROM ${this._tableName} WHERE ${condition} ${(order==null|order=='')?'':'ORDER BY '+order} ${(desc==null||!desc)?'':'DESC'} ${(limit==null||limit<1)?'':'LIMIT '+limit} ${(offset==null||offset<1)?'':' OFFSET '+offset}`		
-		const data = this._db.sqlParams(sql,param);
+		const data = this._db.sqlParams(sql,param);		
 		data.forEach(row=>{
 			Object.keys(row).forEach(k=>row[k]=this.parseField(this._fields[k],row[k]));
 		})
-		//this._values = data;		
 		return data;
 	}
 	all(){
