@@ -42,8 +42,8 @@ class Device {
 		this.statesRecords  = [];
 		this.stateOffset 		= -1;
 		this.trackOffset 		= -1;
-		this.statesRecOffset	= -1;
-		this.tracksRecOffset	= -1;
+		this.statesRecOffset	= Math.round(Date.now()/1000);
+		this.tracksRecOffset	= Math.round(Date.now()/1000);
 		this.setup 					= {};
 		this.extra					= {};
 		this.config 				= {};
@@ -434,7 +434,7 @@ class Device {
 			const minDate = this.statesRecords[0].t;
 			const maxDate = this.statesRecords[this.statesRecords.length-1].t;
 			const pastRecords = this.statesRecords.filter(s=>s.t > self.statesRecOffset && s.t < time);
-			const currentRecords = this.statesRecords.filter(s=>s.t > self.statesRecOffset);
+			const currentRecords = this.statesRecords.filter(s=>s.t > time);
 			console.log("state.pastRecords",pastRecords.length);
 			console.log("state.currentRecords",currentRecords.length);
 			if(pastRecords.length>0){
@@ -460,7 +460,7 @@ class Device {
 			const minDate = this.tracksRecords[0].t;
 			const maxDate = this.tracksRecords[this.tracksRecords.length-1].t;
 			const pastRecords = this.tracksRecords.filter(s=>s.t > self.tracksRecOffset && s.t < time);
-			const currentRecords = this.tracksRecords.filter(s=>s.t > self.statesRecOffset);
+			const currentRecords = this.tracksRecords.filter(s=>s.t > time);
 			console.log("tracks.pastRecords",pastRecords.length);
 			console.log("tracks.currentRecords",currentRecords.length);
 			if(pastRecords.length>0){
