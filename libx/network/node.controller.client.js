@@ -24,7 +24,7 @@ class NodeControllerClient{
 			clientManager.emit("COM",uuid);
 		});
 		clientManager.on('COM',(data,client,uuid)=>{
-			console.info("NodeControllerClient.data COM",data.toString());
+			console.info("NodeControllerClient.data COM", data.toString());
 			clientManager.emit("COM",uuid);
 			/*
 			setTimeout(()=>{

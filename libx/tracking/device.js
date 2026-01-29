@@ -106,12 +106,50 @@ class Device {
 		console.log("recordsState.length", recordsStateDB.length);
 		recordsStateDB.forEach(row=>{
 			const records = bytesToStates(row.data);
-			console.log("records.length",records.length);
+			console.log("states records.length",records.length);
 			records.forEach(r=>{
 				this.statesRecords.push(r)
 			});			
 		});
-		this.statesRecords.sort((a,b)=> a.t-b.t );
+		this.statesRecords.sort((a,b)=> a.t-b.t);
+		let t = -1;
+		
+		let repeat = [];
+		this.statesRecords.forEach((a,i)=> {
+			if(t == a.t){
+				repeat.push(i);
+			}else{
+				t = a.t;
+			}
+		});
+		repeat.reverse().forEach((i)=> {
+			this.statesRecords.splice(i,1);
+		});
+		
+		const tracksRecords = new TracksEntity(dbm);
+		const recordsTracksDB = tracksRecords.findBy(`device_id = '${this.id}' and todate between '${time-86400}' and '${time}'`);
+		console.log("recordsTracksDB.length", recordsTracksDB.length);
+		recordsTracksDB.forEach(row=>{
+			const records = bytesToTracks(row.data);
+			console.log("tracks records.length",records.length);
+			records.forEach(r=>{
+				self.tracksRecords.push(r)
+			});			
+		});
+		this.tracksRecords.sort((a,b)=> a.t-b.t);
+		t = -1;
+		
+		repeat = [];
+		this.tracksRecords.forEach((a,i)=> {
+			if(t == a.t){
+				repeat.push(i);
+			}else{
+				t = a.t;
+			}
+		});
+		repeat.reverse().forEach((i)=> {
+			this.tracksRecords.splice(i,1);
+		});
 		//console.log("recordsState",recordsState);
 	}
 	processPendientRequest() {
@@ -158,7 +196,7 @@ class Device {
 		Object.keys(states).forEach(name=>{
 			const state = statesDB.find(s=>s.name===name);
 			if (state==undefined) return;
-			console.log("self.states[name] == states[name]",self.states[name], "==", states[name]);
+			//console.log("self.states[name] == states[name]",self.states[name], "==", states[name]);
 			if (self.states[name] == states[name]) return;
 			chunk.states.push({
 					state: state.id,
