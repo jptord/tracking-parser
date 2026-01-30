@@ -11,11 +11,15 @@ const { json } = require('body-parser');
 const { NodeControllerClient } = require('./network/node.controller.client.js');
 //const { KernoMonitor } = require('./tracking/monitor');
 
+const { Scheduler }  		= require("./scheduler.js");
+const scheduler 				= new Scheduler();
 const httpServer 				= new HttpServer({ port: process.env.HTTP_PORT, publicFolder: "public" });
 const tcpServer 				= new TcpServer({ port: process.env.TCP_PORT });
 const udpServer 				= new UdpServer({ port: process.env.UDP_PORT });
 const dbm 							= new DBManager({ name: 'tracking-capture' });
 const kafkaProducer 		= new KafkaProducer({ id: 'tracking-capture-1', brokers: ["172.20.50.59:9092"] });
+
+
 const deviceController 	= new DeviceController(tcpServer, udpServer, kafkaProducer, dbm);
 const nodeControllerClient = new NodeControllerClient();
 //const kernoMonitor 	= new KernoMonitor({ port: 7777, app: httpServer });
@@ -30,13 +34,13 @@ class TrackCapture {
 			//nodeTcpClient.send(msg);
 			console.log('tcpServer.addReceiveEvent: ' + msg);
 			deviceController.input(msg, socket, (device, timestamp) => {
-				if (device == undefined) console.log("cant'read", msg);
+				if (device == undefined) console.log("can't read", msg);
 			});
 		});
 		udpServer.addReceiveEvent((msg) => {
 			console.log('udpServer.addReceiveEvent: ' + msg);
 			deviceController.input(msg, null, (device, timestamp) => {
-				if (device == undefined) console.log("cant'read", msg);
+				if (device == undefined) console.log("can't read", msg);
 			});
 		});
 		httpServer.get('/data', (req, res) => {
@@ -205,6 +209,18 @@ class TrackCapture {
 			res.end(JSON.stringify({ "tracks": device.getTracksHistory() }));
 		});
 	}
+	setupScheduler(){		
+		scheduler.on("time.ping",(message)=>{
+			
+		});
+		scheduler.on("time.save",(message)=>{
+			deviceController.save();
+			console.log("saving");
+		});
+		scheduler.on("time.storage",(message)=>{
+
+		});
+	}
 	start() {
 		console.info("TrackCapture 3.0.0");
 
@@ -213,9 +229,11 @@ class TrackCapture {
 		udpServer.start();
 		kafkaProducer.start();
 		nodeControllerClient.start();
+		scheduler.start();
 
 		this.setupInput();
 		this.setupOutput();		
+		this.setupScheduler();
 	}
 }
 module.exports = { TrackCapture };

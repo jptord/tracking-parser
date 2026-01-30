@@ -23,13 +23,13 @@ class UdpServer{
 
         server.on('listening',function(){
             var address 	= server.address();
-            var port 		= address.port;
+            var port 			= address.port;
             var family 		= address.family;
             var ipaddr 		= address.address;
-            me.server		= server;
+            me.server			= server;
             me.address		= address;
-            me.family		= family;
-            me.ipaddr		= ipaddr;
+            me.family			= family;
+            me.ipaddr			= ipaddr;
             console.info(`UdpServer.createServer: listen port ${port}`);
             });		
             
